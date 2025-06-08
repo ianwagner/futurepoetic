@@ -55,19 +55,21 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background">
-      <div
-        ref={containerRef}
-        className="floating zine-container shadow-xl cursor-pointer"
-        onClick={nextPage}
-        style={{
-          transform: `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY + flipAngle}deg)`,
-        }}
-      >
-        <img
-          src={pages[index]}
-          alt={`Zine page ${index + 1}`}
-          className="w-full h-full object-contain pointer-events-none"
-        />
+      <div className="floating">
+        <div
+          ref={containerRef}
+          className="zine-container shadow-xl cursor-pointer"
+          onClick={nextPage}
+          style={{
+            transform: `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY + flipAngle}deg)`,
+          }}
+        >
+          <img
+            src={pages[index]}
+            alt={`Zine page ${index + 1}`}
+            className="w-full h-full object-contain pointer-events-none"
+          />
+        </div>
       </div>
     </main>
   );
