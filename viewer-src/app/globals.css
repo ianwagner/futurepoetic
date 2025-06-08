@@ -33,3 +33,10 @@ body {
 .floating {
   animation: float 6s ease-in-out infinite;
 }
+
+.zine-container {
+  width: 200px;
+  height: 300px;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
