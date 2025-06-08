@@ -11,31 +11,16 @@ const pages = [
 ];
 
 export default function Home() {
-  const [index, setIndex] = useState(0);
-  const [isFlipping, setIsFlipping] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
-  const [flipAngle, setFlipAngle] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const nextPage = () => {
-    if (isFlipping) return;
-    setIsFlipping(true);
-    setFlipAngle(180);
-    setTimeout(() => {
-      setIndex((i) => (i + 1) % pages.length);
-    }, 150);
-    setTimeout(() => {
-      setFlipAngle(0);
-      setIsFlipping(false);
-    }, 300);
-  };
-  const prevPage = () => setIndex((i) => (i - 1 + pages.length) % pages.length);
+  const toggleOpen = () => setIsOpen((o) => !o);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') nextPage();
-      if (e.key === 'ArrowLeft') prevPage();
+      if (e.key === ' ') toggleOpen();
     };
     const handleMouse = (e: MouseEvent) => {
       if (!containerRef.current) return;
@@ -48,9 +33,9 @@ export default function Home() {
     window.addEventListener('keydown', handleKey);
     window.addEventListener('mousemove', handleMouse);
     return () => {
-      window.removeEventListener('keydown', handleKey);
-      window.removeEventListener('mousemove', handleMouse);
-    };
+        window.removeEventListener('keydown', handleKey);
+        window.removeEventListener('mousemove', handleMouse);
+      };
   }, []);
 
   return (
@@ -58,17 +43,42 @@ export default function Home() {
       <div className="floating">
         <div
           ref={containerRef}
-          className="zine-container shadow-xl cursor-pointer"
-          onClick={nextPage}
+          className="book cursor-pointer"
+          onClick={toggleOpen}
           style={{
-            transform: `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY + flipAngle}deg)`,
+            transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
           }}
         >
-          <img
-            src={pages[index]}
-            alt={`Zine page ${index + 1}`}
-            className="w-full h-full object-contain pointer-events-none"
-          />
+          <div className={`cover shadow-xl ${isOpen ? 'open' : ''}`}>
+            <img
+              src={pages[0]}
+              alt="Front cover"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+          </div>
+          <div className={`pages ${isOpen ? 'open' : ''}`}>
+            <div className="page">
+              <img
+                src={pages[1]}
+                alt="Page 1"
+                className="w-full h-full object-contain pointer-events-none"
+              />
+            </div>
+            <div className="page" style={{ left: '200px' }}>
+              <img
+                src={pages[2]}
+                alt="Page 2"
+                className="w-full h-full object-contain pointer-events-none"
+              />
+            </div>
+          </div>
+          <div className="back-cover" style={{ left: '200px' }}>
+            <img
+              src={pages[pages.length - 1]}
+              alt="Back cover"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+          </div>
         </div>
       </div>
     </main>
