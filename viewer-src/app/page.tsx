@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Placeholder image URLs (replace with your Firebase Storage URLs)
 const pages = [
@@ -12,8 +12,24 @@ const pages = [
 
 export default function Home() {
   const [index, setIndex] = useState(0);
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [flipAngle, setFlipAngle] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const nextPage = () => setIndex((i) => (i + 1) % pages.length);
+  const nextPage = () => {
+    if (isFlipping) return;
+    setIsFlipping(true);
+    setFlipAngle(180);
+    setTimeout(() => {
+      setIndex((i) => (i + 1) % pages.length);
+    }, 150);
+    setTimeout(() => {
+      setFlipAngle(0);
+      setIsFlipping(false);
+    }, 300);
+  };
   const prevPage = () => setIndex((i) => (i - 1 + pages.length) % pages.length);
 
   useEffect(() => {
@@ -21,20 +37,36 @@ export default function Home() {
       if (e.key === 'ArrowRight') nextPage();
       if (e.key === 'ArrowLeft') prevPage();
     };
+    const handleMouse = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      setRotateX((-y / rect.height) * 10);
+      setRotateY((x / rect.width) * 10);
+    };
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    window.addEventListener('mousemove', handleMouse);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('mousemove', handleMouse);
+    };
   }, []);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background">
       <div
-        className="floating max-w-[80vw] max-h-[80vh] shadow-xl cursor-pointer"
+        ref={containerRef}
+        className="floating zine-container shadow-xl cursor-pointer"
         onClick={nextPage}
+        style={{
+          transform: `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY + flipAngle}deg)`,
+        }}
       >
         <img
           src={pages[index]}
           alt={`Zine page ${index + 1}`}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain pointer-events-none"
         />
       </div>
     </main>
