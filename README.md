@@ -15,8 +15,9 @@ npm install
 npm run build
 ```
 
-The exported files will appear in `viewer-src/out/`. Copy the contents of that directory into the root `zine-viewer/` folder. If the Middle Archive page is required, also copy `middle-archive.html` and the generated `_next` assets into a new `middle-archive/` folder.
+The exported files will appear in `viewer-src/out/`. Copy the contents of that directory into the root `zine-viewer/` folder.
 
+The Middle Archive page is maintained separately as `middle-archive/index.html`.
 When deploying to GitHub Pages, include an empty `.nojekyll` file at the
 repository root. This prevents Jekyll from stripping directories that start
 with an underscore, such as the Next.js `_next` folder used by both projects.
