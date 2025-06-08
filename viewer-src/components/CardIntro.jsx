@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ZodiacSelector from './ZodiacSelector';
 
-const messages = [
+// Introductory lines shown before displaying the astrological signs.
+const introSequence = [
   'Sensing planet…',
   'Planet found',
   'Calibrating for Earth',
@@ -15,7 +16,7 @@ export default function CardIntro() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (index <= messages.length) {
+    if (index <= introSequence.length) {
       const timer = setTimeout(() => {
         setIndex((i) => i + 1);
       }, 1200);
@@ -24,25 +25,25 @@ export default function CardIntro() {
   }, [index]);
 
   return (
-    <div className="fixed inset-0 flex items-end sm:items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 flex items-center justify-center pointer-events-none bg-black text-white">
       <motion.div
-        className="pointer-events-auto bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg text-white max-w-md w-full"
+        className="pointer-events-auto bg-black p-6 rounded-xl shadow-lg text-white max-w-md w-full"
         initial={{ y: 200, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 70, damping: 15 }}
       >
-        {messages.slice(0, index).map((msg, i) => (
+        {index > 0 && index <= introSequence.length && (
           <motion.p
-            key={i}
+            key={index}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
             className="mb-2 text-center"
           >
-            {msg}
+            {introSequence[index - 1]}
           </motion.p>
-        ))}
-        {index > messages.length && <ZodiacSelector />}
+        )}
+        {index > introSequence.length && <ZodiacSelector />}
       </motion.div>
     </div>
   );
