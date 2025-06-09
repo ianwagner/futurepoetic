@@ -9,7 +9,7 @@ export default function MiddleArchive() {
       <Head>
         <title>Middle Archive</title>
       </Head>
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <CardIntro />
       </div>
     </>
