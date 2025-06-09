@@ -34,7 +34,4 @@ following contents:
 This ensures requests like `/middle-archive` redirect to `/middle-archive/`,
 allowing the relative `_next` asset paths to resolve correctly.
 
-When deploying to GitHub Pages, include an empty `.nojekyll` file at the
-repository root. This prevents Jekyll from stripping directories that start
-with an underscore, such as the Next.js `_next` folder used by both projects.
 
