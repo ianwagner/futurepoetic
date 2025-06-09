@@ -22,3 +22,15 @@ When deploying to GitHub Pages, include an empty `.nojekyll` file at the
 repository root. This prevents Jekyll from stripping directories that start
 with an underscore, such as the Next.js `_next` folder used by both projects.
 
+When hosting the static site on **Vercel**, add a `vercel.json` file with the
+following contents:
+
+```json
+{
+  "trailingSlash": true
+}
+```
+
+This ensures requests like `/middle-archive` redirect to `/middle-archive/`,
+allowing the relative `_next` asset paths to resolve correctly.
+
