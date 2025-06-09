@@ -39,6 +39,7 @@ body {
   width: 400px;
   height: 300px;
   perspective: 800px;
+  transform-style: preserve-3d;
 }
 
 .book-page {
@@ -48,6 +49,7 @@ body {
   height: 300px;
   transition: transform 0.6s ease;
   backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
 .book-page.left {
