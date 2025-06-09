@@ -34,4 +34,10 @@ following contents:
 This ensures requests like `/middle-archive` redirect to `/middle-archive/`,
 allowing the relative `_next` asset paths to resolve correctly.
 
+The page also includes a small client-side script that checks the current
+`window.location.pathname`. If it doesn't already end with a `/`, the script
+automatically redirects the browser to the same path with the trailing slash
+appended. This extra safeguard keeps the archive working even when the host
+doesn't enforce trailing slashes.
+
 
