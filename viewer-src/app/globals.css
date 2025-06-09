@@ -62,6 +62,10 @@ body {
   transform-origin: right;
 }
 
-.book-page.turned {
+.book-page.left.turned {
   transform: rotateY(-180deg);
+}
+
+.book-page.right.turned {
+  transform: rotateY(180deg);
 }
