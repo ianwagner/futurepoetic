@@ -34,14 +34,32 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
-.zine-container {
+.book-container {
+  position: relative;
   width: 400px;
   height: 300px;
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-  display: flex;
+  perspective: 800px;
 }
 
-.zine-page {
-  flex: 1;
+.book-page {
+  position: absolute;
+  top: 0;
+  width: 200px;
+  height: 300px;
+  transition: transform 0.6s ease;
+  backface-visibility: hidden;
+}
+
+.book-page.left {
+  left: 0;
+  transform-origin: left;
+}
+
+.book-page.right {
+  left: 200px;
+  transform-origin: right;
+}
+
+.book-page.turned {
+  transform: rotateY(-180deg);
 }
