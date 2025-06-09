@@ -38,18 +38,24 @@ export default function Home() {
     <main className="min-h-screen flex items-center justify-center bg-background">
       <div className="floating">
         <div className="book-container shadow-xl cursor-pointer" onClick={nextPage}>
-          {pages.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={`Page ${i}`}
-              className={`book-page ${i % 2 === 0 ? 'left' : 'right'} ${i < pageIndex ? 'turned' : ''}`}
-              style={{
-                zIndex: pages.length - i,
-                left: i === 1 && pageIndex === 0 ? 0 : i % 2 === 0 ? 0 : 200,
-              }}
-            />
-          ))}
+          {pages.map((src, i) => {
+            const closing = pageIndex === pages.length;
+            const turned = closing ? i !== 1 : i < pageIndex;
+            const offset =
+              i === 1 && (pageIndex === 0 || closing) ? 0 : i % 2 === 0 ? 0 : 200;
+
+            return (
+              <img
+                key={i}
+                src={src}
+                alt={`Page ${i}`}
+                className={`book-page ${i % 2 === 0 ? 'left' : 'right'} ${
+                  turned ? 'turned' : ''
+                }`}
+                style={{ zIndex: pages.length - i, left: offset }}
+              />
+            );
+          })}
         </div>
       </div>
     </main>
