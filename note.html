@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note to Self</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        #orb {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, #00ffff 60%, rgba(0,0,0,0) 70%);
+            box-shadow: 0 0 20px 10px #00ffff;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #notesContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .note-wrapper {
+            position: absolute;
+            width: 0;
+            height: 0;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transform-origin: 0 0;
+        }
+
+        .note-wrapper.spin {
+            animation: spin var(--duration) linear infinite;
+        }
+
+        .note {
+            position: absolute;
+            background: #fff8a6;
+            color: #000;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            transform: translateX(var(--radius));
+            pointer-events: auto;
+            transition: transform 0.3s;
+        }
+
+        #noteInputContainer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #noteInputContainer textarea {
+            width: 300px;
+            height: 80px;
+            padding: 8px;
+            resize: none;
+        }
+
+        #noteInputContainer button {
+            margin-left: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="orb"></div>
+    <div id="notesContainer"></div>
+    <div id="noteInputContainer">
+        <textarea id="noteInput" placeholder="Write a note..."></textarea>
+        <button id="tossBtn">Toss</button>
+    </div>
+
+    <script>
+    const input = document.getElementById('noteInput');
+    const tossBtn = document.getElementById('tossBtn');
+    const notesContainer = document.getElementById('notesContainer');
+    const orb = document.getElementById('orb');
+
+    tossBtn.addEventListener('click', () => {
+        const text = input.value.trim();
+        if (!text) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'note-wrapper';
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.textContent = text;
+        wrapper.appendChild(note);
+        notesContainer.appendChild(wrapper);
+
+        const startX = window.innerWidth / 2;
+        const startY = window.innerHeight - 80;
+        wrapper.style.left = startX + 'px';
+        wrapper.style.top = startY + 'px';
+
+        const orbRect = orb.getBoundingClientRect();
+        const endX = orbRect.left + orbRect.width / 2;
+        const endY = orbRect.top + orbRect.height / 2;
+
+        wrapper.style.transition = 'left 1s ease-out, top 1s ease-out';
+        requestAnimationFrame(() => {
+            wrapper.style.left = endX + 'px';
+            wrapper.style.top = endY + 'px';
+        });
+
+        wrapper.addEventListener('transitionend', startOrbit);
+
+        function startOrbit() {
+            wrapper.removeEventListener('transitionend', startOrbit);
+            wrapper.style.transition = '';
+            wrapper.style.left = endX + 'px';
+            wrapper.style.top = endY + 'px';
+
+            const radius = 80 + Math.random() * 60;
+            const duration = 15 + Math.random() * 10;
+
+            wrapper.classList.add('spin');
+            wrapper.style.setProperty('--duration', duration + 's');
+            note.style.setProperty('--radius', radius + 'px');
+
+            let hoverTimer;
+            note.addEventListener('mouseenter', () => {
+                hoverTimer = setTimeout(() => {
+                    wrapper.style.animationPlayState = 'paused';
+                    note.style.transform = `translateX(${radius}px) scale(1.5)`;
+                    note.style.zIndex = 1000;
+                }, 500);
+            });
+
+            note.addEventListener('mouseleave', () => {
+                clearTimeout(hoverTimer);
+                wrapper.style.animationPlayState = 'running';
+                note.style.transform = `translateX(${radius}px) scale(1)`;
+                note.style.zIndex = '';
+            });
+
+            note.addEventListener('click', () => {
+                notesContainer.removeChild(wrapper);
+            });
+        }
+
+        input.value = '';
+    });
+    </script>
+</body>
+</html>
