@@ -1,43 +1,32 @@
 # Future Poetic
 
-This repository hosts the static site for **Future Poetic**. Each project is exported as a standalone static folder under the repository root.
+This repository hosts the **Future Poetic** site as a single Next.js app.
+All pages are defined in the app itself and exported for GitHub Pages.
 
-Currently two projects are published:
+## Development
 
-- [`zine-viewer/`](zine-viewer/) – the digital zine viewer
-- [`middle-archive/`](middle-archive/) – an experimental archive page
-
-The zine viewer is generated from the Next.js source located in [`viewer-src/`](viewer-src/). To rebuild it:
+Install dependencies and run the dev server from the repo root:
 
 ```bash
-cd viewer-src
 npm install
-npm run build
+npm run dev
 ```
 
-The exported files will appear in `viewer-src/out/`. Copy the contents of that directory into the root `zine-viewer/` folder.
+## Static export (GitHub Pages)
 
-The Middle Archive page is maintained separately as `middle-archive/index.html`.
-When deploying to GitHub Pages, include an empty `.nojekyll` file at the
-repository root. This prevents Jekyll from stripping directories that start
-with an underscore, such as the Next.js `_next` folder used by both projects.
+The build is configured for `output: "export"`, so `npm run build` generates
+an `out/` folder. GitHub Pages should publish the contents of `out/` (handled
+by the workflow in `.github/workflows/`).
 
-When hosting the static site on **Vercel**, add a `vercel.json` file with the
-following contents:
+The `public/` folder includes:
 
-```json
-{
-  "trailingSlash": true
-}
-```
+- `CNAME` for the custom domain
+- `.nojekyll` to keep `_next/` assets intact
 
-This ensures requests like `/middle-archive` redirect to `/middle-archive/`,
-allowing the relative `_next` asset paths to resolve correctly.
+## Routes
 
-The page also includes a small client-side script that checks the current
-`window.location.pathname`. If it doesn't already end with a `/`, the script
-automatically redirects the browser to the same path with the trailing slash
-appended. This extra safeguard keeps the archive working even when the host
-doesn't enforce trailing slashes.
-
+- `/` – landing page
+- `/zine-viewer/` – zine viewer
+- `/middle-archive/` – middle archive
+- `/note.html` – note to self
 
