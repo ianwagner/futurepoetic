@@ -5,18 +5,17 @@ import { schemaTypes } from './sanity/schemaTypes';
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+const hasStudioEnv = Boolean(projectId && dataset);
 
-if (!projectId || !dataset) {
-  throw new Error(
-    'Missing NEXT_PUBLIC_SANITY_PROJECT_ID or NEXT_PUBLIC_SANITY_DATASET.',
-  );
-}
+const studioConfig = hasStudioEnv
+  ? defineConfig({
+      name: 'default',
+      title: 'Future Poetic',
+      projectId: projectId!,
+      dataset: dataset!,
+      plugins: [deskTool(), visionTool()],
+      schema: { types: schemaTypes },
+    })
+  : null;
 
-export default defineConfig({
-  name: 'default',
-  title: 'Future Poetic',
-  projectId,
-  dataset,
-  plugins: [deskTool(), visionTool()],
-  schema: { types: schemaTypes },
-});
+export default studioConfig;
