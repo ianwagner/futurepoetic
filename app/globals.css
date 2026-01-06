@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes flip-page {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(-180deg); }
+}
+
+@keyframes cover-slide-open {
+  0% { transform: translateX(-200px) rotateY(0deg); }
+  45% { transform: translateX(0) rotateY(0deg); }
+  100% { transform: translateX(0) rotateY(-180deg); }
+}
+
+@keyframes cover-return {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(-180deg); }
+}
+
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+.book-container {
+  position: relative;
+  height: 300px;
+  perspective: 800px;
+  transform-style: preserve-3d;
+  transition: width 0.6s ease;
+}
+
+.book-container.open {
+  width: 400px;
+}
+
+.book-container.closed {
+  width: 200px;
+}
+
+.book-page {
+  position: absolute;
+  top: 0;
+  width: 200px;
+  height: 300px;
+  transition: transform 0.6s ease, opacity 0.4s ease;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.book-page.fade-out {
+  opacity: 0;
+}
+.book-page.cover {
+  left: 0;
+  transform-origin: left;
+}
+
+.book-page.left {
+  left: 0;
+  transform-origin: left;
+}
+
+.book-page.right {
+  left: 200px;
+  transform-origin: left;
+}
+
+.book-page.right.under {
+  z-index: 0;
+}
+
+.page-flip {
+  position: absolute;
+  top: 0;
+  width: 200px;
+  height: 300px;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+}
+
+.page-flip.right {
+  left: 200px;
+  transform-origin: left;
+  z-index: 3;
+}
+
+.page-flip.flipping {
+  animation: flip-page 0.6s ease forwards;
+}
+
+.page-flip.opening {
+  animation: cover-slide-open 0.8s ease forwards;
+}
+
+.page-flip.returning {
+  left: 0;
+  transform-origin: center;
+  z-index: 3;
+  animation: cover-return 0.6s ease forwards;
+}
+
+.page-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 300px;
+  backface-visibility: hidden;
+}
+
+.page-face.back {
+  transform: rotateY(180deg);
+}
