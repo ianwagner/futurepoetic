@@ -265,6 +265,11 @@
                 "constraint": [
                   "europe",
                   "northAmerica",
+                  "southAmerica",
+                  "asia",
+                  "africa",
+                  "oceania",
+                  "antarctica",
                   "global"
                 ]
               },

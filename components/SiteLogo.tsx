@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useSiteSettings } from './SiteSettingsProvider';
@@ -29,4 +30,3 @@ export default function SiteLogo({
 
   return <span className={textClassName}>{fallbackText}</span>;
 }
-/* eslint-disable @next/next/no-img-element */

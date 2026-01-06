@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useCallback } from 'react';
@@ -43,4 +44,3 @@ export default function BackButton() {
     </button>
   );
 }
-/* eslint-disable @next/next/no-img-element */

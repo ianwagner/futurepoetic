@@ -9,7 +9,7 @@ const openSans = Open_Sans({
   subsets: ['latin'],
 });
 
-const scaleOptions = [1, 10, 25, 50, 100] as const;
+const scaleOptions = [1, 10, 25, 50] as const;
 const spacingRange = { min: 1.5, max: 5, step: 0.1 };
 const labelTransitionMs = 300;
 const labelDelayMs = 150;
@@ -59,11 +59,11 @@ const eventStyleTokens = {
   dotShadow: '0_0_10px_rgba(255,255,255,0.4)',
   labelOffsetRem: 3,
   labelHeightClass: 'h-7',
-  labelPaddingClass: 'pl-3',
+  labelPaddingClass: 'px-3',
   labelTrackingClass: 'tracking-[0.18em]',
   labelFontSize: '0.55rem',
   labelBorderClass: 'border border-white/60',
-  labelBackgroundClass: 'bg-black/80',
+  labelBackgroundClass: 'bg-neutral-800/90',
   labelTextClass: 'text-white uppercase',
   dotColorClass: 'bg-white',
   stemColorClass: 'bg-white/70',
@@ -88,12 +88,55 @@ const continentStyles = {
     labelTextClass: 'text-sky-100 uppercase',
     dotShadow: '0_0_10px_rgba(56,189,248,0.4)',
   },
+  southAmerica: {
+    dotColorClass: 'bg-amber-300',
+    stemColorClass: 'bg-amber-200/80',
+    labelBorderClass: 'border border-amber-200/70',
+    labelTextClass: 'text-amber-100 uppercase',
+    dotShadow: '0_0_10px_rgba(251,191,36,0.4)',
+  },
+  asia: {
+    dotColorClass: 'bg-rose-300',
+    stemColorClass: 'bg-rose-200/80',
+    labelBorderClass: 'border border-rose-200/70',
+    labelTextClass: 'text-rose-100 uppercase',
+    dotShadow: '0_0_10px_rgba(251,113,133,0.4)',
+  },
+  africa: {
+    dotColorClass: 'bg-lime-300',
+    stemColorClass: 'bg-lime-200/80',
+    labelBorderClass: 'border border-lime-200/70',
+    labelTextClass: 'text-lime-100 uppercase',
+    dotShadow: '0_0_10px_rgba(163,230,53,0.4)',
+  },
+  oceania: {
+    dotColorClass: 'bg-teal-300',
+    stemColorClass: 'bg-teal-200/80',
+    labelBorderClass: 'border border-teal-200/70',
+    labelTextClass: 'text-teal-100 uppercase',
+    dotShadow: '0_0_10px_rgba(45,212,191,0.4)',
+  },
+  antarctica: {
+    dotColorClass: 'bg-cyan-200',
+    stemColorClass: 'bg-cyan-100/80',
+    labelBorderClass: 'border border-cyan-100/70',
+    labelTextClass: 'text-cyan-50 uppercase',
+    dotShadow: '0_0_10px_rgba(165,243,252,0.35)',
+  },
+  global: {
+    dotColorClass: 'bg-slate-200',
+    stemColorClass: 'bg-slate-100/80',
+    labelBorderClass: 'border border-slate-100/70',
+    labelTextClass: 'text-slate-100 uppercase',
+    dotShadow: '0_0_10px_rgba(226,232,240,0.35)',
+  },
 } as const;
 
 export default function TimelinePage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const yearRefs = useRef(new Map<number, HTMLDivElement | null>());
+  const labelRefs = useRef(new Map<string, HTMLSpanElement | null>());
   const [isReady, setIsReady] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [timelineStartYear, setTimelineStartYear] = useState(0);
@@ -105,10 +148,33 @@ export default function TimelinePage() {
   const [eventSpans, setEventSpans] = useState<
     Record<
       string,
-      { startX: number; endX: number; lane: number; isPoint: boolean; anchorX: number }
+      {
+        startX: number;
+        endX: number;
+        lane: number;
+        isPoint: boolean;
+        anchorX: number;
+        spanWidth: number;
+        layoutWidth: number;
+      }
     >
   >({});
   const [areLabelsHidden, setAreLabelsHidden] = useState(false);
+  const [laneSpacingPx, setLaneSpacingPx] = useState(
+    eventStyleTokens.laneSpacingRem * 16,
+  );
+  const [labelOffsetPx, setLabelOffsetPx] = useState(
+    (eventStyleTokens.topPaddingRem + eventStyleTokens.labelOffsetRem) * 16,
+  );
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [trackTailPaddingPx, setTrackTailPaddingPx] = useState(0);
+  const [labelMeasureTick, setLabelMeasureTick] = useState(0);
+
+  const estimateLabelWidth = (text: string) => {
+    const approxCharWidth = 7;
+    const padding = 24;
+    return Math.max(90, text.length * approxCharWidth + padding);
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -242,6 +308,8 @@ export default function TimelinePage() {
         endX: number;
         isPoint: boolean;
         anchorX: number;
+        spanWidth: number;
+        layoutWidth: number;
       }> = [];
 
       timelineEvents.forEach((event) => {
@@ -249,13 +317,25 @@ export default function TimelinePage() {
         const endX = resolveYearX(event.end);
         if (startX === null || endX === null) return;
         const isPoint = event.start === event.end;
+        const labelText = `${event.label} ${event.dates}`;
+        const measuredNode = labelRefs.current.get(event.id);
+        const measuredWidth = measuredNode
+          ? measuredNode.getBoundingClientRect().width
+          : undefined;
+        const labelWidth =
+          measuredWidth !== undefined && measuredWidth > 0
+            ? measuredWidth + 2
+            : estimateLabelWidth(labelText);
         if (isPoint) {
+          const layoutWidth = labelWidth;
           spanCandidates.push({
             id: event.id,
             startX,
-            endX: startX + eventStyleTokens.pointLabelWidthPx,
+            endX: startX + layoutWidth,
             isPoint: true,
             anchorX: startX,
+            spanWidth: 0,
+            layoutWidth,
           });
         } else {
           let adjustedEndX = endX;
@@ -264,12 +344,16 @@ export default function TimelinePage() {
           } else if (endX - startX < eventStyleTokens.minSpanPx) {
             adjustedEndX = startX + eventStyleTokens.minSpanPx;
           }
+          const spanWidth = adjustedEndX - startX;
+          const layoutWidth = Math.max(spanWidth, labelWidth);
           spanCandidates.push({
             id: event.id,
             startX,
-            endX: adjustedEndX,
+            endX: startX + layoutWidth,
             isPoint: false,
             anchorX: startX,
+            spanWidth,
+            layoutWidth,
           });
         }
       });
@@ -278,7 +362,15 @@ export default function TimelinePage() {
       const lanes: number[] = [];
       const nextSpans: Record<
         string,
-        { startX: number; endX: number; lane: number; isPoint: boolean; anchorX: number }
+        {
+          startX: number;
+          endX: number;
+          lane: number;
+          isPoint: boolean;
+          anchorX: number;
+          spanWidth: number;
+          layoutWidth: number;
+        }
       > = {};
 
       spanCandidates.forEach((span) => {
@@ -294,6 +386,47 @@ export default function TimelinePage() {
         nextSpans[span.id] = { ...span, lane };
       });
 
+      const nextTailPadding = Math.max(
+        0,
+        ...Object.values(nextSpans).map((span) => span.layoutWidth - span.spanWidth),
+      );
+      setTrackTailPaddingPx((prev) =>
+        Math.abs(prev - nextTailPadding) > 1 ? nextTailPadding : prev,
+      );
+
+      const maxLane = Math.max(0, lanes.length - 1);
+      const defaultBaseOffsetPx =
+        (eventStyleTokens.topPaddingRem + eventStyleTokens.labelOffsetRem) * 16;
+      const labelHeightPx = 28;
+      const safetyPaddingPx = 16;
+      let nextBaseOffsetPx = defaultBaseOffsetPx;
+      let nextLaneSpacingPx = eventStyleTokens.laneSpacingRem * 16;
+      if (containerHeight) {
+        const halfHeight = containerHeight / 2;
+        const maxBaseOffset =
+          halfHeight - labelHeightPx - safetyPaddingPx;
+        if (Number.isFinite(maxBaseOffset) && maxBaseOffset > 0) {
+          nextBaseOffsetPx = Math.min(defaultBaseOffsetPx, maxBaseOffset);
+        } else {
+          nextBaseOffsetPx = Math.max(8, halfHeight - labelHeightPx);
+        }
+        if (maxLane > 0) {
+          const available =
+            halfHeight - nextBaseOffsetPx - labelHeightPx - safetyPaddingPx;
+          if (available > 0) {
+            nextLaneSpacingPx = Math.min(
+              nextLaneSpacingPx,
+              Math.max(14, available / maxLane),
+            );
+          }
+        }
+      }
+      setLabelOffsetPx((prev) =>
+        Math.abs(prev - nextBaseOffsetPx) > 0.5 ? nextBaseOffsetPx : prev,
+      );
+      setLaneSpacingPx((prev) =>
+        Math.abs(prev - nextLaneSpacingPx) > 0.5 ? nextLaneSpacingPx : prev,
+      );
       setEventSpans(nextSpans);
     };
 
@@ -329,7 +462,7 @@ export default function TimelinePage() {
         window.cancelAnimationFrame(rafId);
       }
     };
-  }, [timelineEvents, years]);
+  }, [timelineEvents, years, containerHeight, labelMeasureTick]);
 
   useLayoutEffect(() => {
     setAreLabelsHidden(true);
@@ -338,6 +471,31 @@ export default function TimelinePage() {
     }, labelDelayMs);
     return () => window.clearTimeout(delayTimeout);
   }, [yearStep, spacing]);
+
+  useLayoutEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const updateHeight = () => {
+      setContainerHeight(container.clientHeight);
+    };
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const fonts = document.fonts;
+    if (!fonts || !fonts.ready) return;
+    let isActive = true;
+    fonts.ready.then(() => {
+      if (!isActive) return;
+      setLabelMeasureTick((prev) => prev + 1);
+    });
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     const container = scrollRef.current;
@@ -349,10 +507,10 @@ export default function TimelinePage() {
 
   return (
     <main
-      className={`min-h-screen text-white overflow-hidden bg-black ${openSans.className}`}
+      className={`min-h-screen text-white bg-black ${openSans.className}`}
     >
       <div className="min-h-screen flex flex-col">
-        <section className="relative z-10 flex-1 px-6 sm:px-10 pb-12 pt-16">
+        <section className="relative z-10 h-screen px-6 sm:px-10 pb-12 pt-16">
           <div className="absolute right-6 top-6 z-20 flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
             {scaleOptions.map((step) => (
               <button
@@ -369,7 +527,7 @@ export default function TimelinePage() {
                     : 'border-white/30 text-white/60 hover:border-white/70 hover:text-white'
                 }`}
               >
-                {step}y
+                {step}yr
               </button>
             ))}
           </div>
@@ -403,24 +561,40 @@ export default function TimelinePage() {
           <div
             ref={scrollRef}
             onWheel={handleWheel}
-            className="overflow-x-auto overflow-y-hidden pb-24 snap-x snap-proximity touch-pan-x scrollbar-hidden"
+            className="h-full overflow-x-auto overflow-y-visible snap-x snap-proximity touch-pan-x scrollbar-hidden"
             style={{ visibility: isReady ? 'visible' : 'hidden' }}
           >
             <div
               ref={trackRef}
-              className="relative flex items-center py-16 min-w-max"
+              className="relative flex h-full items-center py-16 min-w-max"
               style={{ gap: `${spacing}rem`, transition: 'gap 200ms ease' }}
             >
               <div className="absolute left-0 right-0 top-1/2 h-px bg-white/20" />
+              <div className="absolute left-0 top-0 opacity-0 pointer-events-none whitespace-nowrap">
+                {timelineEvents.map((event) => (
+                  <span
+                    key={`${event.id}-measure`}
+                    ref={(node) => {
+                      if (node) {
+                        labelRefs.current.set(event.id, node);
+                      } else {
+                        labelRefs.current.delete(event.id);
+                      }
+                    }}
+                    className={`inline-flex ${eventStyleTokens.labelHeightClass} items-center ${eventStyleTokens.labelPaddingClass} ${eventStyleTokens.labelTrackingClass} ${eventStyleTokens.labelTextClass} w-max max-w-none`}
+                    style={{ fontSize: eventStyleTokens.labelFontSize }}
+                  >
+                    {event.label} {event.dates}
+                  </span>
+                ))}
+              </div>
               {timelineEvents.map((event) => {
                 const span = eventSpans[event.id];
                 if (!span) return null;
-                const width = span.endX - span.startX;
+                const width = span.layoutWidth;
+                const spanWidth = span.spanWidth;
                 const anchorOffset = span.anchorX - span.startX;
-                const labelTop =
-                  eventStyleTokens.topPaddingRem +
-                  span.lane * eventStyleTokens.laneSpacingRem +
-                  eventStyleTokens.labelOffsetRem;
+                const labelTopPx = labelOffsetPx + span.lane * laneSpacingPx;
                 const continentStyle =
                   continentStyles[
                     event.continent as keyof typeof continentStyles
@@ -428,7 +602,7 @@ export default function TimelinePage() {
                 return (
                   <div
                     key={event.id}
-                    className={`absolute ${eventStyleTokens.groupOffsetClass} pointer-events-none`}
+                    className={`group absolute ${eventStyleTokens.groupOffsetClass}`}
                     style={{
                       left: span.startX,
                       width,
@@ -437,29 +611,29 @@ export default function TimelinePage() {
                     }}
                   >
                     <span
-                      className={`absolute top-0 ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass}`}
+                      className={`absolute top-0 ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass} pointer-events-none opacity-70 transition duration-150 group-hover:scale-150 group-hover:opacity-100`}
                       style={{ left: anchorOffset, boxShadow: continentStyle.dotShadow }}
                     />
                     {!span.isPoint && (
                       <span
-                        className={`absolute top-0 ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass}`}
-                        style={{ left: width, boxShadow: continentStyle.dotShadow }}
+                        className={`absolute top-0 ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass} pointer-events-none opacity-70 transition duration-150 group-hover:scale-150 group-hover:opacity-100`}
+                        style={{ left: spanWidth, boxShadow: continentStyle.dotShadow }}
                       />
                     )}
                     <span
-                      className={`absolute top-0 w-px -translate-x-1/2 ${continentStyle.stemColorClass}`}
-                      style={{ left: anchorOffset, height: `${labelTop}rem` }}
+                      className={`absolute top-0 w-px -translate-x-1/2 ${continentStyle.stemColorClass} pointer-events-none`}
+                      style={{ left: anchorOffset, height: labelTopPx }}
                     />
                     {!span.isPoint && (
                       <span
-                        className={`absolute top-0 w-px -translate-x-1/2 ${continentStyle.stemColorClass}`}
-                        style={{ left: width, height: `${labelTop}rem` }}
+                        className={`absolute top-0 w-px -translate-x-1/2 ${continentStyle.stemColorClass} pointer-events-none`}
+                        style={{ left: spanWidth, height: labelTopPx }}
                       />
                     )}
                     <span
-                      className={`absolute left-0 flex ${eventStyleTokens.labelHeightClass} items-center justify-start ${continentStyle.labelBorderClass} ${eventStyleTokens.labelBackgroundClass} ${continentStyle.labelTextClass} ${eventStyleTokens.labelTrackingClass} ${eventStyleTokens.labelPaddingClass}`}
+                      className={`absolute left-0 flex ${eventStyleTokens.labelHeightClass} items-center justify-start ${continentStyle.labelBorderClass} ${eventStyleTokens.labelBackgroundClass} ${continentStyle.labelTextClass} ${eventStyleTokens.labelTrackingClass} ${eventStyleTokens.labelPaddingClass} whitespace-nowrap w-max max-w-none relative z-10 hover:z-40`}
                       style={{
-                        top: `${labelTop}rem`,
+                        top: labelTopPx,
                         width,
                         fontSize: eventStyleTokens.labelFontSize,
                       }}
@@ -485,11 +659,7 @@ export default function TimelinePage() {
                     }}
                   >
                     <span
-                      className={`block w-px ${isHighlight ? 'bg-white' : 'bg-white/60'}`}
-                      style={{ height: `${isDecade ? 4 : 2.5}rem` }}
-                    />
-                    <span
-                      className={`mt-4 ${
+                      className={`mb-2 ${
                         isDecade ? 'tracking-[0.4em]' : 'tracking-[0.2em]'
                       } ${isHighlight ? 'text-white' : 'text-white/70'}`}
                       style={{ fontSize: '0.65rem' }}
@@ -498,15 +668,24 @@ export default function TimelinePage() {
                     </span>
                     {isDecade && (
                       <span
-                        className="mt-2 uppercase tracking-[0.3em] text-white/40"
+                        className="mb-3 uppercase tracking-[0.3em] text-white/40"
                         style={{ fontSize: '0.5rem' }}
                       >
                         Decade
                       </span>
                     )}
+                    <span
+                      className={`block w-px ${isHighlight ? 'bg-white' : 'bg-white/60'}`}
+                      style={{ height: `${isDecade ? 4 : 2.5}rem` }}
+                    />
                   </div>
                 );
               })}
+              <div
+                aria-hidden
+                className="shrink-0"
+                style={{ width: trackTailPaddingPx }}
+              />
             </div>
           </div>
         </section>

@@ -12,6 +12,10 @@ npm install
 npm run dev
 ```
 
+## Sanity Studio
+
+The Sanity Studio lives at `website/futurepoetic/studio`.
+
 ## Static export (GitHub Pages)
 
 The build is configured for `output: "export"`, so `npm run build` generates
