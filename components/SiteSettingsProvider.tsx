@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { createContext, useContext } from 'react';
 import type { SiteSettings } from '@/sanity/lib/siteSettings';
 
@@ -13,7 +14,7 @@ export function useSiteSettings() {
 
 type SiteSettingsProviderProps = {
   settings: SiteSettings;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export default function SiteSettingsProvider({
