@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
-import type { SiteSettings } from '@/sanity/lib/siteSettings';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { getSiteSettings, type SiteSettings } from '@/sanity/lib/siteSettings';
 
 type SiteSettingsContextValue = SiteSettings | null;
 
@@ -21,8 +21,33 @@ export default function SiteSettingsProvider({
   settings,
   children
 }: SiteSettingsProviderProps) {
+  const [currentSettings, setCurrentSettings] = useState(settings);
+
+  useEffect(() => {
+    setCurrentSettings(settings);
+  }, [settings]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadLatestSettings = async () => {
+      try {
+        const latest = await getSiteSettings({ useCdn: false });
+        if (isActive) setCurrentSettings(latest);
+      } catch {
+        // Keep the build-time settings if the live fetch fails.
+      }
+    };
+
+    loadLatestSettings();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   return (
-    <SiteSettingsContext.Provider value={settings}>
+    <SiteSettingsContext.Provider value={currentSettings}>
       {children}
     </SiteSettingsContext.Provider>
   );

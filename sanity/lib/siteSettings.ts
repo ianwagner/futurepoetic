@@ -16,6 +16,10 @@ export type SiteSettings = {
   faviconUrl: string | null;
 };
 
+type SiteSettingsOptions = {
+  useCdn?: boolean;
+};
+
 const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   logo,
   logoAlt,
@@ -23,9 +27,7 @@ const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   favicon
 }`;
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  const doc = await client.fetch<SiteSettingsDoc | null>(siteSettingsQuery);
-
+function buildSettings(doc: SiteSettingsDoc | null): SiteSettings {
   if (!doc) {
     return {
       logoUrl: null,
@@ -45,4 +47,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       ? urlFor(doc.favicon).width(64).height(64).fit('crop').url()
       : null
   };
+}
+
+export async function getSiteSettings(
+  options: SiteSettingsOptions = {}
+): Promise<SiteSettings> {
+  const settingsClient =
+    options.useCdn === false ? client.withConfig({ useCdn: false }) : client;
+  const doc = await settingsClient.fetch<SiteSettingsDoc | null>(
+    siteSettingsQuery,
+  );
+  return buildSettings(doc);
 }
