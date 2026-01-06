@@ -441,7 +441,7 @@ export default function TimelinePage() {
                       left: span.startX,
                       width,
                       opacity: areLabelsHidden ? 0 : 1,
-                      transition: `opacity 120ms ease`,
+                      transition: `opacity ${labelTransitionMs}ms ease`,
                     }}
                   >
                     <span

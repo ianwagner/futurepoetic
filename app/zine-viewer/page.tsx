@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+/* eslint-disable @next/next/no-img-element */
+
+import { useCallback, useEffect, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 
 // Placeholder image URLs (replace with your Firebase Storage URLs)
@@ -36,7 +38,7 @@ export default function ZineViewerPage() {
   const [rightIndex, setRightIndex] = useState(1);
   const [isFlipping, setIsFlipping] = useState(false);
 
-  const nextPage = () => {
+  const nextPage = useCallback(() => {
     if (!isOpen) {
       if (isOpening || isReturning) return;
       if (isBackCover) {
@@ -56,9 +58,9 @@ export default function ZineViewerPage() {
       return;
     }
     setIsFlipping(true);
-  };
+  }, [isBackCover, isClosing, isFlipping, isOpen, isOpening, isReturning, rightIndex]);
 
-  const prevPage = () => {
+  const prevPage = useCallback(() => {
     if (!isOpen || isFlipping || isClosing) return;
     if (leftIndex <= 0) {
       setIsOpen(false);
@@ -69,7 +71,7 @@ export default function ZineViewerPage() {
     }
     setLeftIndex((i) => Math.max(0, i - 1));
     setRightIndex((i) => Math.max(1, i - 1));
-  };
+  }, [isClosing, isFlipping, isOpen, leftIndex]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -78,7 +80,7 @@ export default function ZineViewerPage() {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, []);
+  }, [nextPage, prevPage]);
 
   useEffect(() => {
     if (!isFlipping) return;

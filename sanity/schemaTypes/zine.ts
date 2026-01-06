@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import type { PreviewValue } from 'sanity';
 
 export const zine = defineType({
   name: 'zine',
@@ -73,12 +74,14 @@ export const zine = defineType({
       media: 'coverImage',
       subtitle: 'publishedAt',
     },
-    prepare(selection) {
-      const { title, media, subtitle } = selection as {
+    prepare(
+      selection: {
         title?: string;
-        media?: unknown;
+        media?: PreviewValue['media'];
         subtitle?: string;
-      };
+      },
+    ): PreviewValue {
+      const { title, media, subtitle } = selection;
       return {
         title: title ?? 'Untitled zine',
         media,
