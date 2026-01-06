@@ -143,7 +143,7 @@ export default function TimelinePage() {
         setTimelineEndYear(doc?.endYear ?? 2026);
         setTimelineEvents(events);
         setLoadError(null);
-      } catch (error) {
+      } catch {
         if (!isActive) return;
         setLoadError('Unable to load timeline events right now.');
       } finally {

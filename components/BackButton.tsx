@@ -43,3 +43,4 @@ export default function BackButton() {
     </button>
   );
 }
+/* eslint-disable @next/next/no-img-element */

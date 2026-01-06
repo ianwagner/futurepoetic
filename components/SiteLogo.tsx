@@ -29,3 +29,4 @@ export default function SiteLogo({
 
   return <span className={textClassName}>{fallbackText}</span>;
 }
+/* eslint-disable @next/next/no-img-element */

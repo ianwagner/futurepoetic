@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -61,7 +62,7 @@ export default function XineLibraryPage() {
         if (!isActive) return;
         setXines(docs.map(toXine).filter((xine) => xine.slug));
         setLoadError(null);
-      } catch (error) {
+      } catch {
         if (!isActive) return;
         setLoadError('Unable to load xines right now.');
       } finally {

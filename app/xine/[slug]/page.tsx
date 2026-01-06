@@ -1,6 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -81,7 +82,7 @@ function XineBook({ xine }: { xine: Xine }) {
   const [rightIndex, setRightIndex] = useState(1);
   const [isFlipping, setIsFlipping] = useState(false);
 
-  const nextPage = () => {
+  const nextPage = useCallback(() => {
     if (!isOpen) {
       if (isOpening || isReturning) return;
       if (isBackCover) {
@@ -101,9 +102,18 @@ function XineBook({ xine }: { xine: Xine }) {
       return;
     }
     setIsFlipping(true);
-  };
+  }, [
+    isBackCover,
+    isClosing,
+    isFlipping,
+    isOpen,
+    isOpening,
+    isReturning,
+    pages.length,
+    rightIndex,
+  ]);
 
-  const prevPage = () => {
+  const prevPage = useCallback(() => {
     if (!isOpen || isFlipping || isClosing) return;
     if (leftIndex <= 0) {
       setIsOpen(false);
@@ -114,7 +124,7 @@ function XineBook({ xine }: { xine: Xine }) {
     }
     setLeftIndex((i) => Math.max(0, i - 1));
     setRightIndex((i) => Math.max(1, i - 1));
-  };
+  }, [isClosing, isFlipping, isOpen, leftIndex]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -123,7 +133,7 @@ function XineBook({ xine }: { xine: Xine }) {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, []);
+  }, [nextPage, prevPage]);
 
   useEffect(() => {
     if (!isFlipping) return;
@@ -365,7 +375,7 @@ export default function XinePage() {
         }
         setXine(toXine(doc));
         setLoadError(null);
-      } catch (error) {
+      } catch {
         if (!isActive) return;
         setLoadError('Unable to load xine right now.');
       } finally {
