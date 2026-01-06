@@ -10,7 +10,7 @@ const rubikMono = Rubik_Mono_One({
 
 export const metadata: Metadata = {
   title: "Future Poetic",
-  description: "Future Poetic studio site and zine viewer",
+  description: "Future Poetic site and zine viewer",
 };
 
 export default function RootLayout({

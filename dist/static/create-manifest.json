@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "createdAt": "2026-01-06T09:21:38.980Z",
+  "workspaces": [
+    {
+      "name": "default",
+      "title": "Future Poetic",
+      "basePath": "/",
+      "projectId": "m2hswuxy",
+      "dataset": "production",
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"2\" fill=\"#024950\"></rect><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" alignment-baseline=\"middle\" fill=\"hsla(185, 95%, 56%, 1)\" style=\"font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, &quot;Liberation Sans&quot;, Helvetica, Arial, system-ui, sans-serif;font-weight:500;font-size:13px;transform:translateY(1px)\">FP</text></svg>",
+      "mediaLibrary": {
+        "enabled": false
+      },
+      "schema": "78d5203d.create-schema.json",
+      "tools": "ba47da56.create-tools.json"
+    }
+  ],
+  "studioVersion": "4.22.0"
+}
