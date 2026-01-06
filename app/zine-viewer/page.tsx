@@ -6,8 +6,6 @@ import type { SanityImageSource } from '@sanity/image-url/lib/types';
 import { client } from '@/sanity/lib/client';
 import { urlFor } from '@/sanity/lib/image';
 
-const FALLBACK_IMAGE = '/file.svg';
-
 type ZineDoc = {
   _id: string;
   title: string;
@@ -58,14 +56,15 @@ const toZine = (doc: ZineDoc): Zine => ({
 });
 
 const handleImgError = (event: SyntheticEvent<HTMLImageElement>) => {
-  event.currentTarget.src = FALLBACK_IMAGE;
+  event.currentTarget.style.opacity = '0';
+  event.currentTarget.setAttribute('data-error', 'true');
 };
 
 function ZineBook({ zine }: { zine: Zine }) {
-  const coverSrc = zine.coverUrl ?? FALLBACK_IMAGE;
+  const coverSrc = zine.coverUrl;
   const backCoverSrc = zine.backCoverUrl ?? coverSrc;
   const pages = zine.pageUrls;
-  const getPageSrc = (index: number) => pages[index] ?? FALLBACK_IMAGE;
+  const getPageSrc = (index: number) => pages[index] ?? null;
 
   const [isOpen, setIsOpen] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
@@ -179,93 +178,148 @@ function ZineBook({ zine }: { zine: Zine }) {
         onClick={nextPage}
       >
         {!isOpen && !isOpening && !isReturning && (
-          <img
-            src={activeCoverSrc}
-            alt={isBackCover ? 'Back cover' : 'Front cover'}
-            className="book-page cover"
-            onError={handleImgError}
-          />
+          activeCoverSrc ? (
+            <img
+              src={activeCoverSrc}
+              alt={isBackCover ? 'Back cover' : 'Front cover'}
+              className="book-page cover"
+              onError={handleImgError}
+            />
+          ) : (
+            <div className="book-page cover image-placeholder">
+              No cover
+            </div>
+          )
         )}
         {!isOpen && isReturning && (
           <div className="page-flip returning" aria-hidden="true">
-            <img
-              src={backCoverSrc}
-              alt=""
-              className="page-face front"
-              onError={handleImgError}
-            />
-            <img
-              src={coverSrc}
-              alt=""
-              className="page-face back"
-              onError={handleImgError}
-            />
-          </div>
-        )}
-        {isOpening && (
-          <>
-            {openingPhase === 'flip' && pages[rightIndex] && (
+            {backCoverSrc ? (
               <img
-                src={getPageSrc(rightIndex)}
-                alt={`Page ${rightIndex}`}
-                className="book-page right under"
-                onError={handleImgError}
-              />
-            )}
-            <div className="page-flip right opening" aria-hidden="true">
-              <img
-                src={activeCoverSrc}
+                src={backCoverSrc}
                 alt=""
                 className="page-face front"
                 onError={handleImgError}
               />
+            ) : (
+              <div className="page-face front image-placeholder" />
+            )}
+            {coverSrc ? (
               <img
-                src={getPageSrc(leftIndex)}
+                src={coverSrc}
                 alt=""
                 className="page-face back"
                 onError={handleImgError}
               />
+            ) : (
+              <div className="page-face back image-placeholder" />
+            )}
+          </div>
+        )}
+        {isOpening && (
+          <>
+            {openingPhase === 'flip' && (
+              getPageSrc(rightIndex) ? (
+                <img
+                  src={getPageSrc(rightIndex) ?? ''}
+                  alt={`Page ${rightIndex}`}
+                  className="book-page right under"
+                  onError={handleImgError}
+                />
+              ) : (
+                <div className="book-page right under image-placeholder" />
+              )
+            )}
+            <div className="page-flip right opening" aria-hidden="true">
+              {activeCoverSrc ? (
+                <img
+                  src={activeCoverSrc}
+                  alt=""
+                  className="page-face front"
+                  onError={handleImgError}
+                />
+              ) : (
+                <div className="page-face front image-placeholder" />
+              )}
+              {getPageSrc(leftIndex) ? (
+                <img
+                  src={getPageSrc(leftIndex) ?? ''}
+                  alt=""
+                  className="page-face back"
+                  onError={handleImgError}
+                />
+              ) : (
+                <div className="page-face back image-placeholder" />
+              )}
             </div>
           </>
         )}
         {isOpen && (
           <>
-            <img
-              src={getPageSrc(leftIndex)}
-              alt={`Page ${leftIndex}`}
-              className="book-page left"
-              onError={handleImgError}
-            />
-            {pages[rightIndex + 2] && (
+            {getPageSrc(leftIndex) ? (
               <img
-                src={getPageSrc(rightIndex + 2)}
+                src={getPageSrc(leftIndex) ?? ''}
+                alt={`Page ${leftIndex}`}
+                className="book-page left"
+                onError={handleImgError}
+              />
+            ) : (
+              <div className="book-page left image-placeholder" />
+            )}
+            {getPageSrc(rightIndex + 2) ? (
+              <img
+                src={getPageSrc(rightIndex + 2) ?? ''}
                 alt={`Page ${rightIndex + 2}`}
                 className="book-page right under"
                 onError={handleImgError}
               />
+            ) : (
+              <div className="book-page right under image-placeholder" />
             )}
             {isFlipping || isClosing ? (
               <div className="page-flip right flipping" aria-hidden="true">
-                <img
-                  src={getPageSrc(rightIndex)}
-                  alt=""
-                  className="page-face front"
-                  onError={handleImgError}
-                />
-                <img
-                  src={isClosing ? backCoverSrc : getPageSrc(rightIndex + 1)}
-                  alt=""
-                  className="page-face back"
-                  onError={handleImgError}
-                />
+                {getPageSrc(rightIndex) ? (
+                  <img
+                    src={getPageSrc(rightIndex) ?? ''}
+                    alt=""
+                    className="page-face front"
+                    onError={handleImgError}
+                  />
+                ) : (
+                  <div className="page-face front image-placeholder" />
+                )}
+                {isClosing ? (
+                  backCoverSrc ? (
+                    <img
+                      src={backCoverSrc}
+                      alt=""
+                      className="page-face back"
+                      onError={handleImgError}
+                    />
+                  ) : (
+                    <div className="page-face back image-placeholder" />
+                  )
+                ) : getPageSrc(rightIndex + 1) ? (
+                  <img
+                    src={getPageSrc(rightIndex + 1) ?? ''}
+                    alt=""
+                    className="page-face back"
+                    onError={handleImgError}
+                  />
+                ) : (
+                  <div className="page-face back image-placeholder" />
+                )}
               </div>
             ) : (
-              <img
-                src={getPageSrc(rightIndex)}
-                alt={`Page ${rightIndex}`}
-                className="book-page right"
-                onError={handleImgError}
-              />
+              getPageSrc(rightIndex) ? (
+                <img
+                  src={getPageSrc(rightIndex) ?? ''}
+                  alt={`Page ${rightIndex}`}
+                  className="book-page right"
+                  onError={handleImgError}
+                />
+              ) : (
+                <div className="book-page right image-placeholder" />
+              )
             )}
           </>
         )}
@@ -321,17 +375,6 @@ export default function ZineViewerPage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         {!selectedZine ? (
           <>
-            <header className="flex flex-col gap-3 text-center">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                Future Poetic
-              </p>
-              <h1 className="text-2xl uppercase tracking-[0.3em]">
-                Zine Library
-              </h1>
-              <p className="text-sm text-white/60">
-                Click a cover to open the zine viewer.
-              </p>
-            </header>
             {isLoading ? (
               <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
                 Loading zines...
@@ -354,12 +397,18 @@ export default function ZineViewerPage() {
                     className="group flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center transition hover:border-white/40 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                   >
                     <div className="h-[220px] w-[160px] overflow-hidden rounded-xl shadow-xl transition-transform duration-300 group-hover:-translate-y-1">
-                      <img
-                        src={zine.coverUrl ?? FALLBACK_IMAGE}
-                        alt={`${zine.title} cover`}
-                        className="h-full w-full object-cover"
-                        onError={handleImgError}
-                      />
+                      {zine.coverUrl ? (
+                        <img
+                          src={zine.coverUrl}
+                          alt={`${zine.title} cover`}
+                          className="h-full w-full object-cover"
+                          onError={handleImgError}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-white/5 text-[10px] uppercase tracking-[0.3em] text-white/40">
+                          No cover
+                        </div>
+                      )}
                     </div>
                     <div className="text-xs uppercase tracking-[0.35em] text-white/60">
                       {zine.issueNumber ? `Issue ${zine.issueNumber}` : 'Zine'}
