@@ -1,33 +1,72 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
-
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import type { SanityImageSource } from '@sanity/image-url/lib/types';
+import { client } from '@/sanity/lib/client';
+import { urlFor } from '@/sanity/lib/image';
 
-// Placeholder image URLs (replace with your Firebase Storage URLs)
-const coverSrc =
-  'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80';
-const backCoverSrc =
-  'https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?auto=format&fit=crop&w=800&q=80';
-const pages = [
-  // First interior spread
-  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=800&q=80',
-  // Second interior spread
-  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80',
-  // Third interior spread
-  'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80',
-];
+const FALLBACK_IMAGE = '/file.svg';
 
-const getPageSrc = (index: number) => pages[index] ?? '/file.svg';
-const handleImgError = (event: SyntheticEvent<HTMLImageElement>) => {
-  event.currentTarget.src = '/file.svg';
+type ZineDoc = {
+  _id: string;
+  title: string;
+  slug?: { current?: string };
+  issueNumber?: number;
+  description?: string;
+  coverImage?: SanityImageSource;
+  backCoverImage?: SanityImageSource;
+  pages?: SanityImageSource[];
+  publishedAt?: string;
 };
 
-export default function ZineViewerPage() {
+type Zine = {
+  id: string;
+  title: string;
+  issueNumber?: number;
+  description?: string;
+  coverUrl: string | null;
+  backCoverUrl: string | null;
+  pageUrls: string[];
+};
+
+const zinesQuery = `*[_type == "zine"] | order(issueNumber asc, publishedAt desc) {
+  _id,
+  title,
+  slug,
+  issueNumber,
+  description,
+  coverImage,
+  backCoverImage,
+  pages,
+  publishedAt
+}`;
+
+const buildImageUrl = (source?: SanityImageSource | null) =>
+  source ? urlFor(source).width(800).height(1200).fit('crop').url() : null;
+
+const toZine = (doc: ZineDoc): Zine => ({
+  id: doc._id,
+  title: doc.title,
+  issueNumber: doc.issueNumber,
+  description: doc.description,
+  coverUrl: buildImageUrl(doc.coverImage),
+  backCoverUrl: buildImageUrl(doc.backCoverImage),
+  pageUrls: (doc.pages ?? [])
+    .map((page) => buildImageUrl(page))
+    .filter((page): page is string => Boolean(page)),
+});
+
+const handleImgError = (event: SyntheticEvent<HTMLImageElement>) => {
+  event.currentTarget.src = FALLBACK_IMAGE;
+};
+
+function ZineBook({ zine }: { zine: Zine }) {
+  const coverSrc = zine.coverUrl ?? FALLBACK_IMAGE;
+  const backCoverSrc = zine.backCoverUrl ?? coverSrc;
+  const pages = zine.pageUrls;
+  const getPageSrc = (index: number) => pages[index] ?? FALLBACK_IMAGE;
+
   const [isOpen, setIsOpen] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -38,7 +77,7 @@ export default function ZineViewerPage() {
   const [rightIndex, setRightIndex] = useState(1);
   const [isFlipping, setIsFlipping] = useState(false);
 
-  const nextPage = useCallback(() => {
+  const nextPage = () => {
     if (!isOpen) {
       if (isOpening || isReturning) return;
       if (isBackCover) {
@@ -58,9 +97,9 @@ export default function ZineViewerPage() {
       return;
     }
     setIsFlipping(true);
-  }, [isBackCover, isClosing, isFlipping, isOpen, isOpening, isReturning, rightIndex]);
+  };
 
-  const prevPage = useCallback(() => {
+  const prevPage = () => {
     if (!isOpen || isFlipping || isClosing) return;
     if (leftIndex <= 0) {
       setIsOpen(false);
@@ -71,7 +110,7 @@ export default function ZineViewerPage() {
     }
     setLeftIndex((i) => Math.max(0, i - 1));
     setRightIndex((i) => Math.max(1, i - 1));
-  }, [isClosing, isFlipping, isOpen, leftIndex]);
+  };
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -80,7 +119,7 @@ export default function ZineViewerPage() {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [nextPage, prevPage]);
+  }, []);
 
   useEffect(() => {
     if (!isFlipping) return;
@@ -92,7 +131,7 @@ export default function ZineViewerPage() {
       setIsFlipping(false);
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [isFlipping, rightIndex]);
+  }, [isFlipping, rightIndex, pages.length]);
 
   useEffect(() => {
     if (!isOpening) return;
@@ -134,104 +173,237 @@ export default function ZineViewerPage() {
   const activeCoverSrc = isBackCover ? backCoverSrc : coverSrc;
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background">
-      <div className="floating">
-        <div
-          className={`book-container shadow-xl cursor-pointer ${isOpen || isOpening ? 'open' : 'closed'}`}
-          onClick={nextPage}
-        >
-          {!isOpen && !isOpening && !isReturning && (
+    <div className="floating">
+      <div
+        className={`book-container shadow-xl cursor-pointer ${isOpen || isOpening ? 'open' : 'closed'}`}
+        onClick={nextPage}
+      >
+        {!isOpen && !isOpening && !isReturning && (
+          <img
+            src={activeCoverSrc}
+            alt={isBackCover ? 'Back cover' : 'Front cover'}
+            className="book-page cover"
+            onError={handleImgError}
+          />
+        )}
+        {!isOpen && isReturning && (
+          <div className="page-flip returning" aria-hidden="true">
             <img
-              src={activeCoverSrc}
-              alt={isBackCover ? 'Back cover' : 'Front cover'}
-              className="book-page cover"
+              src={backCoverSrc}
+              alt=""
+              className="page-face front"
               onError={handleImgError}
             />
-          )}
-          {!isOpen && isReturning && (
-            <div className="page-flip returning" aria-hidden="true">
+            <img
+              src={coverSrc}
+              alt=""
+              className="page-face back"
+              onError={handleImgError}
+            />
+          </div>
+        )}
+        {isOpening && (
+          <>
+            {openingPhase === 'flip' && pages[rightIndex] && (
               <img
-                src={backCoverSrc}
+                src={getPageSrc(rightIndex)}
+                alt={`Page ${rightIndex}`}
+                className="book-page right under"
+                onError={handleImgError}
+              />
+            )}
+            <div className="page-flip right opening" aria-hidden="true">
+              <img
+                src={activeCoverSrc}
                 alt=""
                 className="page-face front"
                 onError={handleImgError}
               />
               <img
-                src={coverSrc}
+                src={getPageSrc(leftIndex)}
                 alt=""
                 className="page-face back"
                 onError={handleImgError}
               />
             </div>
-          )}
-          {isOpening && (
-            <>
-              {openingPhase === 'flip' && pages[rightIndex] && (
+          </>
+        )}
+        {isOpen && (
+          <>
+            <img
+              src={getPageSrc(leftIndex)}
+              alt={`Page ${leftIndex}`}
+              className="book-page left"
+              onError={handleImgError}
+            />
+            {pages[rightIndex + 2] && (
+              <img
+                src={getPageSrc(rightIndex + 2)}
+                alt={`Page ${rightIndex + 2}`}
+                className="book-page right under"
+                onError={handleImgError}
+              />
+            )}
+            {isFlipping || isClosing ? (
+              <div className="page-flip right flipping" aria-hidden="true">
                 <img
                   src={getPageSrc(rightIndex)}
-                  alt={`Page ${rightIndex}`}
-                  className="book-page right under"
-                  onError={handleImgError}
-                />
-              )}
-              <div className="page-flip right opening" aria-hidden="true">
-                <img
-                  src={activeCoverSrc}
                   alt=""
                   className="page-face front"
                   onError={handleImgError}
                 />
                 <img
-                  src={getPageSrc(leftIndex)}
+                  src={isClosing ? backCoverSrc : getPageSrc(rightIndex + 1)}
                   alt=""
                   className="page-face back"
                   onError={handleImgError}
                 />
               </div>
-            </>
-          )}
-          {isOpen && (
-            <>
+            ) : (
               <img
-                src={getPageSrc(leftIndex)}
-                alt={`Page ${leftIndex}`}
-                className="book-page left"
+                src={getPageSrc(rightIndex)}
+                alt={`Page ${rightIndex}`}
+                className="book-page right"
                 onError={handleImgError}
               />
-              {pages[rightIndex + 2] && (
-                <img
-                  src={getPageSrc(rightIndex + 2)}
-                  alt={`Page ${rightIndex + 2}`}
-                  className="book-page right under"
-                  onError={handleImgError}
-                />
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function ZineViewerPage() {
+  const [zines, setZines] = useState<Zine[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadZines = async () => {
+      try {
+        const docs = await client.fetch<ZineDoc[]>(zinesQuery);
+        if (!isActive) return;
+        setZines(docs.map(toZine));
+        setLoadError(null);
+      } catch (error) {
+        if (!isActive) return;
+        setLoadError('Unable to load zines right now.');
+      } finally {
+        if (!isActive) return;
+        setIsLoading(false);
+      }
+    };
+
+    loadZines();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const selectedZine = useMemo(
+    () => zines.find((zine) => zine.id === selectedId) ?? null,
+    [zines, selectedId],
+  );
+
+  useEffect(() => {
+    if (selectedId && !selectedZine && !isLoading) {
+      setSelectedId(null);
+    }
+  }, [selectedId, selectedZine, isLoading]);
+
+  return (
+    <main className="min-h-screen bg-background text-foreground px-6 py-16">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10">
+        {!selectedZine ? (
+          <>
+            <header className="flex flex-col gap-3 text-center">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                Future Poetic
+              </p>
+              <h1 className="text-2xl uppercase tracking-[0.3em]">
+                Zine Library
+              </h1>
+              <p className="text-sm text-white/60">
+                Click a cover to open the zine viewer.
+              </p>
+            </header>
+            {isLoading ? (
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
+                Loading zines...
+              </div>
+            ) : loadError ? (
+              <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-10 text-center text-sm text-red-100">
+                {loadError}
+              </div>
+            ) : zines.length === 0 ? (
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
+                No zines published yet.
+              </div>
+            ) : (
+              <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {zines.map((zine) => (
+                  <button
+                    key={zine.id}
+                    type="button"
+                    onClick={() => setSelectedId(zine.id)}
+                    className="group flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center transition hover:border-white/40 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  >
+                    <div className="h-[220px] w-[160px] overflow-hidden rounded-xl shadow-xl transition-transform duration-300 group-hover:-translate-y-1">
+                      <img
+                        src={zine.coverUrl ?? FALLBACK_IMAGE}
+                        alt={`${zine.title} cover`}
+                        className="h-full w-full object-cover"
+                        onError={handleImgError}
+                      />
+                    </div>
+                    <div className="text-xs uppercase tracking-[0.35em] text-white/60">
+                      {zine.issueNumber ? `Issue ${zine.issueNumber}` : 'Zine'}
+                    </div>
+                    <div className="text-sm uppercase tracking-[0.2em] text-white/90">
+                      {zine.title}
+                    </div>
+                    {zine.description && (
+                      <p className="text-xs text-white/50">
+                        {zine.description}
+                      </p>
+                    )}
+                  </button>
+                ))}
+              </section>
+            )}
+          </>
+        ) : (
+          <section className="flex min-h-[70vh] flex-col items-center justify-center gap-8">
+            <button
+              type="button"
+              onClick={() => setSelectedId(null)}
+              className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.3em] text-white/70 transition hover:border-white/60 hover:text-white"
+            >
+              {'<-'} Back to library
+            </button>
+            <div className="text-center">
+              {selectedZine.issueNumber && (
+                <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                  Issue {selectedZine.issueNumber}
+                </p>
               )}
-              {isFlipping || isClosing ? (
-                <div className="page-flip right flipping" aria-hidden="true">
-                  <img
-                    src={getPageSrc(rightIndex)}
-                    alt=""
-                    className="page-face front"
-                    onError={handleImgError}
-                  />
-                  <img
-                    src={isClosing ? backCoverSrc : getPageSrc(rightIndex + 1)}
-                    alt=""
-                    className="page-face back"
-                    onError={handleImgError}
-                  />
-                </div>
-              ) : (
-                <img
-                  src={getPageSrc(rightIndex)}
-                  alt={`Page ${rightIndex}`}
-                  className="book-page right"
-                  onError={handleImgError}
-                />
+              <h2 className="text-2xl uppercase tracking-[0.3em]">
+                {selectedZine.title}
+              </h2>
+              {selectedZine.description && (
+                <p className="mt-3 max-w-xl text-sm text-white/60">
+                  {selectedZine.description}
+                </p>
               )}
-            </>
-          )}
-        </div>
+            </div>
+            <ZineBook key={selectedZine.id} zine={selectedZine} />
+          </section>
+        )}
       </div>
     </main>
   );
