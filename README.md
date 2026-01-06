@@ -26,7 +26,6 @@ The `public/` folder includes:
 ## Routes
 
 - `/` – landing page
-- `/zine-viewer/` – zine viewer
+- `/xine-library/` – xine viewer
 - `/middle-archive/` – middle archive
 - `/note.html` – note to self
-

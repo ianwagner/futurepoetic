@@ -15,10 +15,10 @@ export default function Home() {
             Timeline
           </a>
           <a
-            href="/zine-viewer/"
+            href="/xine-library/"
             className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
           >
-            View Zine
+            View Xine
           </a>
           <a
             href="/note.html"

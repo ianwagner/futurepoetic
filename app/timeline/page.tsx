@@ -1,140 +1,57 @@
 'use client';
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Open_Sans } from 'next/font/google';
+import { client } from '@/sanity/lib/client';
 
 const openSans = Open_Sans({
   weight: ['400', '600', '700'],
   subsets: ['latin'],
 });
 
-const startYear = 0;
-const endYear = 2026;
 const scaleOptions = [1, 10, 25, 50, 100] as const;
 const spacingRange = { min: 1.5, max: 5, step: 0.1 };
 const labelTransitionMs = 300;
 const labelDelayMs = 150;
-const dateTokens = {
-  americanRevolutionStart: 1775,
-  americanRevolutionEnd: 1783,
-  frenchRevolutionStart: 1789,
-  frenchRevolutionEnd: 1799,
-  louisXVIExecution: 1793,
-  marieAntoinetteExecution: 1793,
-  greatDepressionStart: 1929,
-  greatDepressionEnd: 1939,
-  moonLanding: 1969,
-  nineEleven: 2001,
-  covidStart: 2019,
-  covidEnd: 2022,
-  ww1Start: 1914,
-  ww1End: 1918,
-  ww2Start: 1939,
-  ww2End: 1945,
-} as const;
 
-const timelineEvents = [
-  {
-    id: 'american-revolution',
-    label: 'American Revolution',
-    dates: `${dateTokens.americanRevolutionStart}-${dateTokens.americanRevolutionEnd}`,
-    start: dateTokens.americanRevolutionStart,
-    end: dateTokens.americanRevolutionEnd,
-    continent: 'northAmerica',
-  },
-  {
-    id: 'french-revolution',
-    label: 'French Revolution',
-    dates: `${dateTokens.frenchRevolutionStart}-${dateTokens.frenchRevolutionEnd}`,
-    start: dateTokens.frenchRevolutionStart,
-    end: dateTokens.frenchRevolutionEnd,
-    continent: 'europe',
-  },
-  {
-    id: 'louis-xvi-execution',
-    label: 'Louis XVI Execution',
-    dates: `${dateTokens.louisXVIExecution}`,
-    start: dateTokens.louisXVIExecution,
-    end: dateTokens.louisXVIExecution,
-    continent: 'europe',
-  },
-  {
-    id: 'marie-antoinette-execution',
-    label: 'Marie Antoinette Execution',
-    dates: `${dateTokens.marieAntoinetteExecution}`,
-    start: dateTokens.marieAntoinetteExecution,
-    end: dateTokens.marieAntoinetteExecution,
-    continent: 'europe',
-  },
-  {
-    id: 'ww1',
-    label: 'WWI',
-    dates: `${dateTokens.ww1Start}-${dateTokens.ww1End}`,
-    start: dateTokens.ww1Start,
-    end: dateTokens.ww1End,
-    continent: 'europe',
-  },
-  {
-    id: 'great-depression',
-    label: 'Great Depression',
-    dates: `${dateTokens.greatDepressionStart}-${dateTokens.greatDepressionEnd}`,
-    start: dateTokens.greatDepressionStart,
-    end: dateTokens.greatDepressionEnd,
-    continent: 'europe',
-  },
-  {
-    id: 'ww2',
-    label: 'WWII',
-    dates: `${dateTokens.ww2Start}-${dateTokens.ww2End}`,
-    start: dateTokens.ww2Start,
-    end: dateTokens.ww2End,
-    continent: 'europe',
-  },
-  {
-    id: 'moon-landing',
-    label: 'Moon Landing',
-    dates: `${dateTokens.moonLanding}`,
-    start: dateTokens.moonLanding,
-    end: dateTokens.moonLanding,
-    continent: 'northAmerica',
-  },
-  {
-    id: 'nine-eleven',
-    label: '9/11',
-    dates: `${dateTokens.nineEleven}`,
-    start: dateTokens.nineEleven,
-    end: dateTokens.nineEleven,
-    continent: 'northAmerica',
-  },
-  {
-    id: 'covid',
-    label: 'COVID-19',
-    dates: `${dateTokens.covidStart}-${dateTokens.covidEnd}`,
-    start: dateTokens.covidStart,
-    end: dateTokens.covidEnd,
-    continent: 'global',
-  },
-];
-const highlightYears = new Set([
-  0,
-  dateTokens.americanRevolutionStart,
-  dateTokens.americanRevolutionEnd,
-  dateTokens.frenchRevolutionStart,
-  dateTokens.frenchRevolutionEnd,
-  dateTokens.louisXVIExecution,
-  dateTokens.marieAntoinetteExecution,
-  dateTokens.ww1Start,
-  dateTokens.ww1End,
-  dateTokens.greatDepressionStart,
-  dateTokens.greatDepressionEnd,
-  dateTokens.ww2Start,
-  dateTokens.ww2End,
-  dateTokens.moonLanding,
-  dateTokens.nineEleven,
-  dateTokens.covidStart,
-  dateTokens.covidEnd,
-  2026,
-]);
+type TimelineEventDoc = {
+  _key?: string;
+  label?: string;
+  startYear?: number;
+  endYear?: number;
+  continent?: string;
+  datesLabel?: string;
+};
+
+type TimelineDoc = {
+  title?: string;
+  startYear?: number;
+  endYear?: number;
+  events?: TimelineEventDoc[];
+};
+
+type TimelineEvent = {
+  id: string;
+  label: string;
+  dates: string;
+  start: number;
+  end: number;
+  continent: string;
+};
+
+const timelineQuery = `*[_type == "timeline"][0]{
+  title,
+  startYear,
+  endYear,
+  events[]{
+    _key,
+    label,
+    startYear,
+    endYear,
+    continent,
+    datesLabel
+  }
+}`;
 
 const eventStyleTokens = {
   groupOffsetClass: 'top-1/2',
@@ -178,6 +95,11 @@ export default function TimelinePage() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const yearRefs = useRef(new Map<number, HTMLDivElement | null>());
   const [isReady, setIsReady] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [timelineStartYear, setTimelineStartYear] = useState(0);
+  const [timelineEndYear, setTimelineEndYear] = useState(2026);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [yearStep, setYearStep] = useState<(typeof scaleOptions)[number]>(1);
   const [spacing, setSpacing] = useState(2.5);
   const [eventSpans, setEventSpans] = useState<
@@ -188,23 +110,84 @@ export default function TimelinePage() {
   >({});
   const [areLabelsHidden, setAreLabelsHidden] = useState(false);
 
+  useEffect(() => {
+    let isActive = true;
+
+    const loadTimeline = async () => {
+      try {
+        const doc = await client.fetch<TimelineDoc | null>(timelineQuery);
+        if (!isActive) return;
+
+        const events = (doc?.events ?? [])
+          .map((event, index) => {
+            const start = event.startYear ?? 0;
+            const end = event.endYear ?? start;
+            const label = event.label ?? 'Untitled event';
+            const dates =
+              event.datesLabel ??
+              (start === end ? `${start}` : `${start}-${end}`);
+            return {
+              id: event._key ?? `${label}-${index}`,
+              label,
+              dates,
+              start,
+              end,
+              continent: event.continent ?? 'global',
+            };
+          })
+          .filter(
+            (event) => Number.isFinite(event.start) && Number.isFinite(event.end),
+          );
+
+        setTimelineStartYear(doc?.startYear ?? 0);
+        setTimelineEndYear(doc?.endYear ?? 2026);
+        setTimelineEvents(events);
+        setLoadError(null);
+      } catch (error) {
+        if (!isActive) return;
+        setLoadError('Unable to load timeline events right now.');
+      } finally {
+        if (!isActive) return;
+        setIsDataLoaded(true);
+      }
+    };
+
+    loadTimeline();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   const years = useMemo(() => {
     const values: number[] = [];
-    for (let year = startYear; year <= endYear; year += yearStep) {
+    for (let year = timelineStartYear; year <= timelineEndYear; year += yearStep) {
       values.push(year);
     }
-    if (values[values.length - 1] !== endYear) {
-      values.push(endYear);
+    if (values[values.length - 1] !== timelineEndYear) {
+      values.push(timelineEndYear);
     }
     return values;
-  }, [yearStep]);
+  }, [timelineStartYear, timelineEndYear, yearStep]);
+
+  const highlightYears = useMemo(() => {
+    const highlighted = new Set<number>();
+    highlighted.add(timelineStartYear);
+    highlighted.add(timelineEndYear);
+    timelineEvents.forEach((event) => {
+      highlighted.add(event.start);
+      highlighted.add(event.end);
+    });
+    return highlighted;
+  }, [timelineStartYear, timelineEndYear, timelineEvents]);
 
   useLayoutEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
+    if (!isDataLoaded) return;
     container.scrollLeft = container.scrollWidth - container.clientWidth;
     setIsReady(true);
-  }, [yearStep]);
+  }, [isDataLoaded, yearStep]);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -346,7 +329,7 @@ export default function TimelinePage() {
         window.cancelAnimationFrame(rafId);
       }
     };
-  }, [years]);
+  }, [timelineEvents, years]);
 
   useLayoutEffect(() => {
     setAreLabelsHidden(true);
@@ -408,6 +391,15 @@ export default function TimelinePage() {
               {spacing.toFixed(1)}x
             </span>
           </div>
+          {loadError ? (
+            <div className="mb-6 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-red-100">
+              {loadError}
+            </div>
+          ) : isDataLoaded && timelineEvents.length === 0 ? (
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-white/60">
+              No timeline events yet.
+            </div>
+          ) : null}
           <div
             ref={scrollRef}
             onWheel={handleWheel}

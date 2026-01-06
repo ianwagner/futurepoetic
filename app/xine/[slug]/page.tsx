@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
+import { LuChevronLeft } from 'react-icons/lu';
 import { client } from '@/sanity/lib/client';
 import { urlFor } from '@/sanity/lib/image';
 
-type ZineDoc = {
+type XineDoc = {
   _id: string;
   title: string;
   slug?: { current?: string };
@@ -18,9 +21,10 @@ type ZineDoc = {
   publishedAt?: string;
 };
 
-type Zine = {
+type Xine = {
   id: string;
   title: string;
+  slug: string;
   issueNumber?: number;
   description?: string;
   coverUrl: string | null;
@@ -28,7 +32,7 @@ type Zine = {
   pageUrls: string[];
 };
 
-const zinesQuery = `*[_type == "zine"] | order(issueNumber asc, publishedAt desc) {
+const xineQuery = `*[_type == "xine" && slug.current == $slug][0] {
   _id,
   title,
   slug,
@@ -43,9 +47,10 @@ const zinesQuery = `*[_type == "zine"] | order(issueNumber asc, publishedAt desc
 const buildImageUrl = (source?: SanityImageSource | null) =>
   source ? urlFor(source).width(800).height(1200).fit('crop').url() : null;
 
-const toZine = (doc: ZineDoc): Zine => ({
+const toXine = (doc: XineDoc): Xine => ({
   id: doc._id,
   title: doc.title,
+  slug: doc.slug?.current ?? '',
   issueNumber: doc.issueNumber,
   description: doc.description,
   coverUrl: buildImageUrl(doc.coverImage),
@@ -60,10 +65,10 @@ const handleImgError = (event: SyntheticEvent<HTMLImageElement>) => {
   event.currentTarget.setAttribute('data-error', 'true');
 };
 
-function ZineBook({ zine }: { zine: Zine }) {
-  const coverSrc = zine.coverUrl;
-  const backCoverSrc = zine.backCoverUrl ?? coverSrc;
-  const pages = zine.pageUrls;
+function XineBook({ xine }: { xine: Xine }) {
+  const coverSrc = xine.coverUrl;
+  const backCoverSrc = xine.backCoverUrl ?? coverSrc;
+  const pages = xine.pageUrls;
   const getPageSrc = (index: number) => pages[index] ?? null;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -328,131 +333,92 @@ function ZineBook({ zine }: { zine: Zine }) {
   );
 }
 
-export default function ZineViewerPage() {
-  const [zines, setZines] = useState<Zine[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export default function XinePage() {
+  const params = useParams<{ slug?: string | string[] }>();
+  const slug = useMemo(() => {
+    if (!params?.slug) return null;
+    return Array.isArray(params.slug) ? params.slug[0] : params.slug;
+  }, [params]);
+  const [xine, setXine] = useState<Xine | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
+    setIsLoading(true);
+    setLoadError(null);
+    setXine(null);
 
-    const loadZines = async () => {
+    const loadXine = async () => {
+      if (!slug) {
+        setLoadError('Xine not found.');
+        setIsLoading(false);
+        return;
+      }
       try {
-        const docs = await client.fetch<ZineDoc[]>(zinesQuery);
+        const doc = await client.fetch<XineDoc | null>(xineQuery, { slug });
         if (!isActive) return;
-        setZines(docs.map(toZine));
+        if (!doc) {
+          setXine(null);
+          setLoadError('Xine not found.');
+          return;
+        }
+        setXine(toXine(doc));
         setLoadError(null);
       } catch (error) {
         if (!isActive) return;
-        setLoadError('Unable to load zines right now.');
+        setLoadError('Unable to load xine right now.');
       } finally {
         if (!isActive) return;
         setIsLoading(false);
       }
     };
 
-    loadZines();
+    loadXine();
 
     return () => {
       isActive = false;
     };
-  }, []);
-
-  const selectedZine = useMemo(
-    () => zines.find((zine) => zine.id === selectedId) ?? null,
-    [zines, selectedId],
-  );
-
-  useEffect(() => {
-    if (selectedId && !selectedZine && !isLoading) {
-      setSelectedId(null);
-    }
-  }, [selectedId, selectedZine, isLoading]);
+  }, [slug]);
 
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-16">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
-        {!selectedZine ? (
-          <>
-            {isLoading ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
-                Loading zines...
-              </div>
-            ) : loadError ? (
-              <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-10 text-center text-sm text-red-100">
-                {loadError}
-              </div>
-            ) : zines.length === 0 ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
-                No zines published yet.
-              </div>
-            ) : (
-              <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {zines.map((zine) => (
-                  <button
-                    key={zine.id}
-                    type="button"
-                    onClick={() => setSelectedId(zine.id)}
-                    className="group flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-white/5 px-6 py-8 text-center transition hover:border-white/40 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                  >
-                    <div className="h-[220px] w-[160px] overflow-hidden rounded-xl shadow-xl transition-transform duration-300 group-hover:-translate-y-1">
-                      {zine.coverUrl ? (
-                        <img
-                          src={zine.coverUrl}
-                          alt={`${zine.title} cover`}
-                          className="h-full w-full object-cover"
-                          onError={handleImgError}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-white/5 text-[10px] uppercase tracking-[0.3em] text-white/40">
-                          No cover
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-xs uppercase tracking-[0.35em] text-white/60">
-                      {zine.issueNumber ? `Issue ${zine.issueNumber}` : 'Zine'}
-                    </div>
-                    <div className="text-sm uppercase tracking-[0.2em] text-white/90">
-                      {zine.title}
-                    </div>
-                    {zine.description && (
-                      <p className="text-xs text-white/50">
-                        {zine.description}
-                      </p>
-                    )}
-                  </button>
-                ))}
-              </section>
-            )}
-          </>
-        ) : (
+        {isLoading ? (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
+            Loading xine...
+          </div>
+        ) : loadError ? (
+          <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-10 text-center text-sm text-red-100">
+            {loadError}
+          </div>
+        ) : xine ? (
           <section className="flex min-h-[70vh] flex-col items-center justify-center gap-8">
-            <button
-              type="button"
-              onClick={() => setSelectedId(null)}
-              className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.3em] text-white/70 transition hover:border-white/60 hover:text-white"
+            <Link
+              href="/xine-library"
+              aria-label="Back to library"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 p-3 text-white/70 transition hover:border-white/60 hover:text-white"
             >
-              {'<-'} Back to library
-            </button>
+              <LuChevronLeft className="h-5 w-5" aria-hidden="true" />
+            </Link>
             <div className="text-center">
-              {selectedZine.issueNumber && (
+              {xine.issueNumber && (
                 <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                  Issue {selectedZine.issueNumber}
+                  Issue {xine.issueNumber}
                 </p>
               )}
               <h2 className="text-2xl uppercase tracking-[0.3em]">
-                {selectedZine.title}
+                {xine.title}
               </h2>
-              {selectedZine.description && (
+              {xine.description && (
                 <p className="mt-3 max-w-xl text-sm text-white/60">
-                  {selectedZine.description}
+                  {xine.description}
                 </p>
               )}
             </div>
-            <ZineBook key={selectedZine.id} zine={selectedZine} />
+            <XineBook key={xine.id} xine={xine} />
           </section>
-        )}
+        ) : null}
       </div>
     </main>
   );
