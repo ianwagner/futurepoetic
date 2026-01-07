@@ -3,8 +3,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { SyntheticEvent } from 'react';
-import Link from 'next/link';
-import { LuChevronLeft } from 'react-icons/lu';
 
 export type Xine = {
   id: string;
@@ -304,13 +302,6 @@ export default function XineViewerClient({ xine }: { xine: Xine }) {
     <main className="min-h-screen bg-background text-foreground px-6 py-16">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <section className="flex min-h-[70vh] flex-col items-center justify-center gap-8">
-          <Link
-            href="/xine-library"
-            aria-label="Back to library"
-            className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 p-3 text-white/70 transition hover:border-white/60 hover:text-white"
-          >
-            <LuChevronLeft className="h-5 w-5" aria-hidden="true" />
-          </Link>
           <div className="text-center">
             {xine.issueNumber && (
               <p className="text-xs uppercase tracking-[0.4em] text-white/50">

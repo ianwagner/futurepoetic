@@ -12,10 +12,6 @@ export default function BackButton() {
   const backIconUrl = settings?.backIconUrl ?? null;
 
   const handleBack = useCallback(() => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-      return;
-    }
     router.push('/');
   }, [router]);
 
@@ -34,7 +30,7 @@ export default function BackButton() {
             src={backIconUrl}
             alt=""
             aria-hidden="true"
-            className="h-4 w-4"
+            className="h-5 w-5 object-contain"
           />
           <span className="sr-only">Back</span>
         </>

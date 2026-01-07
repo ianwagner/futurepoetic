@@ -10,9 +10,12 @@ const openSans = Open_Sans({
 });
 
 const scaleOptions = [1, 10, 25, 50] as const;
+  const eventTypeOptions = ['politics', 'economy', 'art', 'war', 'science'] as const;
 const spacingRange = { min: 1.5, max: 5, step: 0.1 };
 const labelTransitionMs = 300;
 const labelDelayMs = 150;
+
+type EventType = (typeof eventTypeOptions)[number];
 
 type TimelineEventDoc = {
   _key?: string;
@@ -20,6 +23,7 @@ type TimelineEventDoc = {
   startYear?: number;
   endYear?: number;
   continent?: string;
+  eventType?: EventType;
   datesLabel?: string;
 };
 
@@ -37,6 +41,7 @@ type TimelineEvent = {
   start: number;
   end: number;
   continent: string;
+  eventType: EventType;
 };
 
 const timelineQuery = `*[_type == "timeline"][0]{
@@ -49,12 +54,13 @@ const timelineQuery = `*[_type == "timeline"][0]{
     startYear,
     endYear,
     continent,
+    eventType,
     datesLabel
   }
 }`;
 
 const eventStyleTokens = {
-  groupOffsetClass: 'top-1/2',
+  groupOffsetClass: 'top-0',
   dotSizeClass: 'h-2 w-2',
   dotShadow: '0_0_10px_rgba(255,255,255,0.4)',
   labelOffsetRem: 3,
@@ -70,7 +76,7 @@ const eventStyleTokens = {
   laneSpacingRem: 3,
   minSpanPx: 24,
   pointLabelWidthPx: 200,
-  topPaddingRem: 1.5,
+  topPaddingRem: 7,
 } as const;
 
 const continentStyles = {
@@ -137,6 +143,7 @@ export default function TimelinePage() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const yearRefs = useRef(new Map<number, HTMLDivElement | null>());
   const labelRefs = useRef(new Map<string, HTMLSpanElement | null>());
+  const filterMenuRef = useRef<HTMLDivElement | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [timelineStartYear, setTimelineStartYear] = useState(0);
@@ -164,11 +171,40 @@ export default function TimelinePage() {
     eventStyleTokens.laneSpacingRem * 16,
   );
   const [labelOffsetPx, setLabelOffsetPx] = useState(
-    (eventStyleTokens.topPaddingRem + eventStyleTokens.labelOffsetRem) * 16,
+    eventStyleTokens.labelOffsetRem * 16,
   );
   const [containerHeight, setContainerHeight] = useState(0);
   const [trackTailPaddingPx, setTrackTailPaddingPx] = useState(0);
   const [labelMeasureTick, setLabelMeasureTick] = useState(0);
+  const [axisTopPx, setAxisTopPx] = useState(0);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const baselinePx = eventStyleTokens.topPaddingRem * 16;
+  const continentOptions = Object.keys(continentStyles) as Array<
+    keyof typeof continentStyles
+  >;
+  const [activeContinents, setActiveContinents] = useState<string[]>(
+    continentOptions,
+  );
+  const [activeEventTypes, setActiveEventTypes] = useState<
+    Array<(typeof eventTypeOptions)[number]>
+  >(() => [...eventTypeOptions]);
+  const continentLabels: Record<keyof typeof continentStyles, string> = {
+    europe: 'Europe',
+    northAmerica: 'North America',
+    southAmerica: 'South America',
+    asia: 'Asia',
+    africa: 'Africa',
+    oceania: 'Oceania',
+    antarctica: 'Antarctica',
+    global: 'Global',
+  };
+  const eventTypeLabels: Record<(typeof eventTypeOptions)[number], string> = {
+    politics: 'Politics',
+    economy: 'Economy',
+    art: 'Art',
+    war: 'War',
+    science: 'Science',
+  };
 
   const estimateLabelWidth = (text: string) => {
     const approxCharWidth = 7;
@@ -199,6 +235,7 @@ export default function TimelinePage() {
               start,
               end,
               continent: event.continent ?? 'global',
+              eventType: event.eventType ?? 'politics',
             };
           })
           .filter(
@@ -236,24 +273,70 @@ export default function TimelinePage() {
     return values;
   }, [timelineStartYear, timelineEndYear, yearStep]);
 
+  const filteredEvents = useMemo(() => {
+    if (activeContinents.length === 0 || activeEventTypes.length === 0) {
+      return [];
+    }
+    return timelineEvents.filter((event) =>
+      activeContinents.includes(event.continent) &&
+      activeEventTypes.includes(event.eventType),
+    );
+  }, [timelineEvents, activeContinents, activeEventTypes]);
+
   const highlightYears = useMemo(() => {
     const highlighted = new Set<number>();
     highlighted.add(timelineStartYear);
     highlighted.add(timelineEndYear);
-    timelineEvents.forEach((event) => {
+    filteredEvents.forEach((event) => {
       highlighted.add(event.start);
       highlighted.add(event.end);
     });
     return highlighted;
-  }, [timelineStartYear, timelineEndYear, timelineEvents]);
+  }, [timelineStartYear, timelineEndYear, filteredEvents]);
+
+  useEffect(() => {
+    if (!isFilterMenuOpen) return;
+    const handlePointer = (event: MouseEvent) => {
+      if (!filterMenuRef.current) return;
+      if (!filterMenuRef.current.contains(event.target as Node)) {
+        setIsFilterMenuOpen(false);
+      }
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsFilterMenuOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handlePointer);
+    window.addEventListener('keydown', handleKey);
+    return () => {
+      window.removeEventListener('mousedown', handlePointer);
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [isFilterMenuOpen]);
 
   useLayoutEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
     if (!isDataLoaded) return;
-    container.scrollLeft = container.scrollWidth - container.clientWidth;
-    setIsReady(true);
-  }, [isDataLoaded, yearStep]);
+    let rafId: number | null = null;
+    rafId = window.requestAnimationFrame(() => {
+      const lastYear = years[years.length - 1];
+      const lastNode = yearRefs.current.get(lastYear) ?? null;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      let targetScroll = Math.max(0, maxScroll - trackTailPaddingPx);
+      if (lastNode) {
+        targetScroll = lastNode.offsetLeft + lastNode.offsetWidth - container.clientWidth;
+      }
+      container.scrollLeft = Math.max(0, Math.min(targetScroll, maxScroll));
+      setIsReady(true);
+    });
+    return () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, [isDataLoaded, yearStep, years, trackTailPaddingPx]);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -265,6 +348,7 @@ export default function TimelinePage() {
     const updateSpans = () => {
       const trackRect = track.getBoundingClientRect();
       const anchorPositions = new Map<number, number>();
+      const axisOffsets: number[] = [];
       years.forEach((year) => {
         const anchor = yearRefs.current.get(year);
         if (!anchor) return;
@@ -273,7 +357,13 @@ export default function TimelinePage() {
           year,
           rect.left - trackRect.left + rect.width / 2,
         );
+        const axisLine = anchor.querySelector<HTMLElement>('[data-axis-line]');
+        if (axisLine) {
+          axisOffsets.push(anchor.offsetTop + axisLine.offsetTop);
+        }
       });
+      const nextAxisTopPx =
+        axisOffsets.length > 0 ? Math.max(...axisOffsets) : baselinePx;
 
       const resolveYearX = (year: number) => {
         const exact = anchorPositions.get(year);
@@ -312,7 +402,7 @@ export default function TimelinePage() {
         layoutWidth: number;
       }> = [];
 
-      timelineEvents.forEach((event) => {
+      filteredEvents.forEach((event) => {
         const startX = resolveYearX(event.start);
         const endX = resolveYearX(event.end);
         if (startX === null || endX === null) return;
@@ -395,28 +485,25 @@ export default function TimelinePage() {
       );
 
       const maxLane = Math.max(0, lanes.length - 1);
-      const defaultBaseOffsetPx =
-        (eventStyleTokens.topPaddingRem + eventStyleTokens.labelOffsetRem) * 16;
+      const defaultBaseOffsetPx = eventStyleTokens.labelOffsetRem * 16;
       const labelHeightPx = 28;
       const safetyPaddingPx = 16;
       let nextBaseOffsetPx = defaultBaseOffsetPx;
       let nextLaneSpacingPx = eventStyleTokens.laneSpacingRem * 16;
       if (containerHeight) {
-        const halfHeight = containerHeight / 2;
-        const maxBaseOffset =
-          halfHeight - labelHeightPx - safetyPaddingPx;
-        if (Number.isFinite(maxBaseOffset) && maxBaseOffset > 0) {
-          nextBaseOffsetPx = Math.min(defaultBaseOffsetPx, maxBaseOffset);
-        } else {
-          nextBaseOffsetPx = Math.max(8, halfHeight - labelHeightPx);
+        const maxAllowedTop =
+          containerHeight - nextAxisTopPx - labelHeightPx - safetyPaddingPx;
+        const minBaseOffset = 8;
+        if (Number.isFinite(maxAllowedTop)) {
+          nextBaseOffsetPx = Math.min(defaultBaseOffsetPx, maxAllowedTop);
+          nextBaseOffsetPx = Math.max(nextBaseOffsetPx, minBaseOffset);
         }
         if (maxLane > 0) {
-          const available =
-            halfHeight - nextBaseOffsetPx - labelHeightPx - safetyPaddingPx;
+          const available = maxAllowedTop - nextBaseOffsetPx;
           if (available > 0) {
             nextLaneSpacingPx = Math.min(
               nextLaneSpacingPx,
-              Math.max(14, available / maxLane),
+              Math.max(12, available / maxLane),
             );
           }
         }
@@ -426,6 +513,9 @@ export default function TimelinePage() {
       );
       setLaneSpacingPx((prev) =>
         Math.abs(prev - nextLaneSpacingPx) > 0.5 ? nextLaneSpacingPx : prev,
+      );
+      setAxisTopPx((prev) =>
+        Math.abs(prev - nextAxisTopPx) > 0.5 ? nextAxisTopPx : prev,
       );
       setEventSpans(nextSpans);
     };
@@ -462,7 +552,7 @@ export default function TimelinePage() {
         window.cancelAnimationFrame(rafId);
       }
     };
-  }, [timelineEvents, years, containerHeight, labelMeasureTick]);
+  }, [filteredEvents, years, containerHeight, labelMeasureTick, baselinePx]);
 
   useLayoutEffect(() => {
     setAreLabelsHidden(true);
@@ -531,23 +621,100 @@ export default function TimelinePage() {
               </button>
             ))}
           </div>
-          <div className="absolute right-6 top-20 z-20 flex items-center gap-3 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
-            <span className="text-white/40">Zoom</span>
-            <input
-              type="range"
-              min={spacingRange.min}
-              max={spacingRange.max}
-              step={spacingRange.step}
-              value={spacing}
-              onChange={(event) => {
-                setSpacing(Number(event.target.value));
-              }}
-              className="w-40 accent-white"
-              aria-label="Zoom spacing"
-            />
-            <span className="tabular-nums text-white/60">
-              {spacing.toFixed(1)}x
-            </span>
+          <div className="absolute right-6 top-20 z-20 flex flex-col items-end gap-3 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
+            <div className="flex items-center gap-3">
+              <span className="text-white/40">Zoom</span>
+              <input
+                type="range"
+                min={spacingRange.min}
+                max={spacingRange.max}
+                step={spacingRange.step}
+                value={spacing}
+                onChange={(event) => {
+                  setSpacing(Number(event.target.value));
+                }}
+                className="w-40 accent-white"
+                aria-label="Zoom spacing"
+              />
+              <span className="tabular-nums text-white/60">
+                {spacing.toFixed(1)}x
+              </span>
+            </div>
+            <div className="relative" ref={filterMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsFilterMenuOpen((prev) => !prev)}
+                className="flex h-8 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white/70 transition hover:border-white/40 hover:text-white"
+                aria-haspopup="true"
+                aria-expanded={isFilterMenuOpen}
+                aria-label="Toggle continent filters"
+              >
+                <span className="flex items-center gap-1">
+                  <span className="h-1 w-1 rounded-full bg-current" />
+                  <span className="h-1 w-1 rounded-full bg-current" />
+                  <span className="h-1 w-1 rounded-full bg-current" />
+                </span>
+              </button>
+              {isFilterMenuOpen ? (
+                <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-white/20 bg-neutral-900/95 p-3 text-[10px] uppercase tracking-[0.25em] text-white/70 shadow-2xl">
+                  <div className="mb-2 text-[9px] text-white/40">
+                    Continents
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {continentOptions.map((continent) => (
+                      <label
+                        key={continent}
+                        className="flex items-center gap-2"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={activeContinents.includes(continent)}
+                          onChange={() => {
+                            setActiveContinents((prev) =>
+                              prev.includes(continent)
+                                ? prev.filter((entry) => entry !== continent)
+                                : [...prev, continent],
+                            );
+                          }}
+                          className="h-3 w-3 rounded border border-white/40 bg-transparent text-white accent-white"
+                        />
+                        <span
+                          className={`h-2 w-2 rounded-full ${continentStyles[continent].dotColorClass}`}
+                        />
+                        <span className="text-white/80">
+                          {continentLabels[continent]}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="my-3 h-px bg-white/10" />
+                  <div className="mb-2 text-[9px] text-white/40">
+                    Event Type
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {eventTypeOptions.map((eventType) => (
+                      <label key={eventType} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={activeEventTypes.includes(eventType)}
+                          onChange={() => {
+                            setActiveEventTypes((prev) =>
+                              prev.includes(eventType)
+                                ? prev.filter((entry) => entry !== eventType)
+                                : [...prev, eventType],
+                            );
+                          }}
+                          className="h-3 w-3 rounded border border-white/40 bg-transparent text-white accent-white"
+                        />
+                        <span className="text-white/80">
+                          {eventTypeLabels[eventType]}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
           {loadError ? (
             <div className="mb-6 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-red-100">
@@ -556,6 +723,10 @@ export default function TimelinePage() {
           ) : isDataLoaded && timelineEvents.length === 0 ? (
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-white/60">
               No timeline events yet.
+            </div>
+          ) : isDataLoaded && filteredEvents.length === 0 ? (
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-white/60">
+              No events match your filters.
             </div>
           ) : null}
           <div
@@ -566,12 +737,19 @@ export default function TimelinePage() {
           >
             <div
               ref={trackRef}
-              className="relative flex h-full items-center py-16 min-w-max"
-              style={{ gap: `${spacing}rem`, transition: 'gap 200ms ease' }}
-            >
-              <div className="absolute left-0 right-0 top-1/2 h-px bg-white/20" />
+            className="relative flex h-full items-start min-w-max"
+            style={{
+              gap: `${spacing}rem`,
+              transition: 'gap 200ms ease',
+              paddingTop: baselinePx,
+            }}
+          >
+              <div
+                className="absolute left-0 right-0 h-px bg-white/20"
+                style={{ top: axisTopPx }}
+              />
               <div className="absolute left-0 top-0 opacity-0 pointer-events-none whitespace-nowrap">
-                {timelineEvents.map((event) => (
+                {filteredEvents.map((event) => (
                   <span
                     key={`${event.id}-measure`}
                     ref={(node) => {
@@ -588,13 +766,15 @@ export default function TimelinePage() {
                   </span>
                 ))}
               </div>
-              {timelineEvents.map((event) => {
+              {filteredEvents.map((event) => {
                 const span = eventSpans[event.id];
                 if (!span) return null;
                 const width = span.layoutWidth;
                 const spanWidth = span.spanWidth;
                 const anchorOffset = span.anchorX - span.startX;
-                const labelTopPx = labelOffsetPx + span.lane * laneSpacingPx;
+                const labelTopPx =
+                  axisTopPx + labelOffsetPx + span.lane * laneSpacingPx;
+                const stemHeightPx = labelTopPx - axisTopPx;
                 const continentStyle =
                   continentStyles[
                     event.continent as keyof typeof continentStyles
@@ -605,29 +785,46 @@ export default function TimelinePage() {
                     className={`group absolute ${eventStyleTokens.groupOffsetClass}`}
                     style={{
                       left: span.startX,
+                      top: 0,
                       width,
                       opacity: areLabelsHidden ? 0 : 1,
                       transition: `opacity ${labelTransitionMs}ms ease`,
                     }}
                   >
                     <span
-                      className={`absolute top-0 ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass} pointer-events-none opacity-70 transition duration-150 group-hover:scale-150 group-hover:opacity-100`}
-                      style={{ left: anchorOffset, boxShadow: continentStyle.dotShadow }}
+                      className={`absolute ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass} pointer-events-none opacity-70 transition duration-150 group-hover:scale-150 group-hover:opacity-100`}
+                      style={{
+                        left: anchorOffset,
+                        top: axisTopPx,
+                        boxShadow: continentStyle.dotShadow,
+                      }}
                     />
                     {!span.isPoint && (
                       <span
-                        className={`absolute top-0 ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass} pointer-events-none opacity-70 transition duration-150 group-hover:scale-150 group-hover:opacity-100`}
-                        style={{ left: spanWidth, boxShadow: continentStyle.dotShadow }}
+                        className={`absolute ${eventStyleTokens.dotSizeClass} -translate-x-1/2 rounded-full ${continentStyle.dotColorClass} pointer-events-none opacity-70 transition duration-150 group-hover:scale-150 group-hover:opacity-100`}
+                        style={{
+                          left: spanWidth,
+                          top: axisTopPx,
+                          boxShadow: continentStyle.dotShadow,
+                        }}
                       />
                     )}
                     <span
-                      className={`absolute top-0 w-px -translate-x-1/2 ${continentStyle.stemColorClass} pointer-events-none`}
-                      style={{ left: anchorOffset, height: labelTopPx }}
+                      className={`absolute w-px -translate-x-1/2 ${continentStyle.stemColorClass} pointer-events-none`}
+                      style={{
+                        left: anchorOffset,
+                        top: axisTopPx,
+                        height: stemHeightPx,
+                      }}
                     />
                     {!span.isPoint && (
                       <span
-                        className={`absolute top-0 w-px -translate-x-1/2 ${continentStyle.stemColorClass} pointer-events-none`}
-                        style={{ left: spanWidth, height: labelTopPx }}
+                        className={`absolute w-px -translate-x-1/2 ${continentStyle.stemColorClass} pointer-events-none`}
+                        style={{
+                          left: spanWidth,
+                          top: axisTopPx,
+                          height: stemHeightPx,
+                        }}
                       />
                     )}
                     <span
@@ -675,6 +872,7 @@ export default function TimelinePage() {
                       </span>
                     )}
                     <span
+                      data-axis-line
                       className={`block w-px ${isHighlight ? 'bg-white' : 'bg-white/60'}`}
                       style={{ height: `${isDecade ? 4 : 2.5}rem` }}
                     />

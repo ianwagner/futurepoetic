@@ -41,7 +41,7 @@ function buildSettings(doc: SiteSettingsDoc | null): SiteSettings {
     logoUrl: doc.logo ? urlFor(doc.logo).width(360).url() : null,
     logoAlt: doc.logoAlt ?? null,
     backIconUrl: doc.backIcon
-      ? urlFor(doc.backIcon).width(28).height(28).fit('crop').url()
+      ? urlFor(doc.backIcon).width(32).fit('max').url()
       : null,
     faviconUrl: doc.favicon
       ? urlFor(doc.favicon).width(64).height(64).fit('crop').url()

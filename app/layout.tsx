@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import BackButton from '../components/BackButton';
+import BackButtonClient from '../components/BackButtonClient';
 import SiteSettingsProvider from '../components/SiteSettingsProvider';
 import { getSiteSettings } from '@/sanity/lib/siteSettings';
 
@@ -32,7 +32,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${jetbrainsMono.className} ${jetbrainsMono.variable} antialiased`}>
         <SiteSettingsProvider settings={settings}>
-          <BackButton />
+          <BackButtonClient />
           {children}
         </SiteSettingsProvider>
       </body>
