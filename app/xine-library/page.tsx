@@ -79,7 +79,7 @@ export default function XineLibraryPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-background text-foreground px-6 py-16">
+    <main className="min-h-[calc(100svh-8rem)] bg-background text-foreground px-6 py-16">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         {isLoading ? (
           <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">

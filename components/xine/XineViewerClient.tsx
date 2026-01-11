@@ -635,7 +635,7 @@ function XineBook({ xine }: { xine: Xine }) {
 
 export default function XineViewerClient({ xine }: { xine: Xine }) {
   return (
-    <main className="min-h-screen bg-background text-foreground px-6 py-16">
+    <main className="min-h-[calc(100svh-8rem)] bg-background text-foreground px-6 py-16">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <section className="flex min-h-[70vh] flex-col items-center justify-center gap-8">
           <div className="text-center">

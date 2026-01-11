@@ -21,7 +21,7 @@ export default function BackButton() {
     <button
       type="button"
       onClick={handleBack}
-      className="fixed left-6 top-6 z-40 inline-flex items-center rounded-full border border-white/40 bg-black/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur transition hover:border-white/70 hover:text-white hover:bg-black/60"
+      className="inline-flex h-9 items-center rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur transition hover:border-[#F78326] hover:text-[#F78326] hover:bg-black/60"
       aria-label="Go back"
     >
       {backIconUrl ? (
@@ -30,7 +30,7 @@ export default function BackButton() {
             src={backIconUrl}
             alt=""
             aria-hidden="true"
-            className="h-5 w-5 object-contain"
+            className="h-7 w-7 object-contain"
           />
           <span className="sr-only">Back</span>
         </>

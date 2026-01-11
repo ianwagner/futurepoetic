@@ -601,53 +601,15 @@ export default function TimelinePage() {
     >
       <div className="min-h-screen flex flex-col">
         <section className="relative z-10 h-screen px-6 sm:px-10 pb-12 pt-16">
-          <div className="absolute right-6 top-6 z-20 flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
-            {scaleOptions.map((step) => (
-              <button
-                key={step}
-                type="button"
-                onClick={() => {
-                  if (step === yearStep) return;
-                  setIsReady(false);
-                  setYearStep(step);
-                }}
-                className={`px-3 py-2 border transition ${
-                  yearStep === step
-                    ? 'border-white text-white'
-                    : 'border-white/30 text-white/60 hover:border-white/70 hover:text-white'
-                }`}
-              >
-                {step}yr
-              </button>
-            ))}
-          </div>
-          <div className="absolute right-6 top-20 z-20 flex flex-col items-end gap-3 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
-            <div className="flex items-center gap-3">
-              <span className="text-white/40">Zoom</span>
-              <input
-                type="range"
-                min={spacingRange.min}
-                max={spacingRange.max}
-                step={spacingRange.step}
-                value={spacing}
-                onChange={(event) => {
-                  setSpacing(Number(event.target.value));
-                }}
-                className="w-40 accent-white"
-                aria-label="Zoom spacing"
-              />
-              <span className="tabular-nums text-white/60">
-                {spacing.toFixed(1)}x
-              </span>
-            </div>
+          <div className="absolute right-6 top-6 z-20 flex flex-col items-end gap-3 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
             <div className="relative" ref={filterMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-                className="flex h-8 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white/70 transition hover:border-white/40 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#F78326] hover:text-[#F78326] hover:scale-105"
                 aria-haspopup="true"
                 aria-expanded={isFilterMenuOpen}
-                aria-label="Toggle continent filters"
+                aria-label="Toggle timeline filters"
               >
                 <span className="flex items-center gap-1">
                   <span className="h-1 w-1 rounded-full bg-current" />
@@ -656,7 +618,31 @@ export default function TimelinePage() {
                 </span>
               </button>
               {isFilterMenuOpen ? (
-                <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-white/20 bg-neutral-900/95 p-3 text-[10px] uppercase tracking-[0.25em] text-white/70 shadow-2xl">
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-white/20 bg-neutral-900/95 p-3 text-[10px] uppercase tracking-[0.25em] text-white/70 shadow-2xl">
+                  <div className="mb-2 text-[9px] text-white/40">
+                    Year Scale
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {scaleOptions.map((step) => (
+                      <button
+                        key={step}
+                        type="button"
+                        onClick={() => {
+                          if (step === yearStep) return;
+                          setIsReady(false);
+                          setYearStep(step);
+                        }}
+                        className={`px-3 py-2 border transition ${
+                          yearStep === step
+                            ? 'border-white text-white'
+                            : 'border-white/30 text-white/60 hover:border-white/70 hover:text-white'
+                        }`}
+                      >
+                        {step}yr
+                      </button>
+                    ))}
+                  </div>
+                  <div className="my-3 h-px bg-white/10" />
                   <div className="mb-2 text-[9px] text-white/40">
                     Continents
                   </div>
@@ -715,6 +701,24 @@ export default function TimelinePage() {
                 </div>
               ) : null}
             </div>
+          </div>
+          <div className="absolute left-1/2 top-20 z-20 flex w-[calc(100%-3rem)] -translate-x-1/2 items-center justify-center gap-3 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto sm:left-auto sm:right-6 sm:top-20 sm:w-auto sm:translate-x-0 sm:justify-end">
+            <span className="text-white/40">Zoom</span>
+            <input
+              type="range"
+              min={spacingRange.min}
+              max={spacingRange.max}
+              step={spacingRange.step}
+              value={spacing}
+              onChange={(event) => {
+                setSpacing(Number(event.target.value));
+              }}
+              className="w-40 accent-white"
+              aria-label="Zoom spacing"
+            />
+            <span className="tabular-nums text-white/60">
+              {spacing.toFixed(1)}x
+            </span>
           </div>
           {loadError ? (
             <div className="mb-6 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-red-100">
