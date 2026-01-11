@@ -18,7 +18,7 @@ export default function Home() {
             href="/xine-library/"
             className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
           >
-            View Xine
+            Xines
           </a>
         </div>
       </div>

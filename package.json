@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "postbuild": "node scripts/add-studio-tak-easter-egg.mjs",
+    "add-easter-egg": "node scripts/add-studio-tak-easter-egg.mjs",
     "start": "next start",
     "lint": "next lint"
   },
