@@ -21,12 +21,6 @@ export default function Home() {
             View Xine
           </a>
           <a
-            href="/note.html"
-            className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
-          >
-            Note to Self
-          </a>
-          <a
             href="mailto:info@studiotak.co"
             className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
           >

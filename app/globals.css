@@ -43,6 +43,11 @@ body {
   to { transform: rotateY(-180deg); }
 }
 
+@keyframes flip-page-back {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(180deg); }
+}
+
 @keyframes cover-slide-open {
   0% { transform: translateX(-200px) rotateY(0deg); }
   45% { transform: translateX(0) rotateY(0deg); }
@@ -97,10 +102,15 @@ body {
   transform-origin: left;
 }
 
+.book-page.left.under {
+  z-index: 0;
+}
+
 .book-page.right {
   left: 200px;
   transform-origin: left;
 }
+
 
 .book-page.right.under {
   z-index: 0;
@@ -121,8 +131,18 @@ body {
   z-index: 3;
 }
 
+.page-flip.left {
+  left: 0;
+  transform-origin: right;
+  z-index: 3;
+}
+
 .page-flip.flipping {
   animation: flip-page 0.6s ease forwards;
+}
+
+.page-flip.flipping-back {
+  animation: flip-page-back 0.6s ease forwards;
 }
 
 .page-flip.opening {
@@ -145,9 +165,30 @@ body {
   backface-visibility: hidden;
 }
 
+.page-peel {
+  position: absolute;
+  top: 0;
+  width: 200px;
+  height: 300px;
+  transform-style: preserve-3d;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.page-peel.right {
+  left: 200px;
+  transform-origin: left;
+}
+
+.page-peel.left {
+  left: 0;
+  transform-origin: right;
+}
+
 .page-face.back {
   transform: rotateY(180deg);
 }
+
 
 .image-placeholder {
   display: flex;
