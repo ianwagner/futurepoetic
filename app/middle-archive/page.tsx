@@ -12,7 +12,7 @@ export default function MiddleArchivePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+    <div className="min-h-[100svh] bg-black text-white flex items-center justify-center">
       <CardIntro />
     </div>
   );

@@ -2,7 +2,7 @@ import SiteLogo from '@/components/SiteLogo';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center">
+    <main className="min-h-[100svh] bg-black text-white flex items-center justify-center">
       <div className="text-center px-6">
         <h1 className="text-4xl sm:text-5xl tracking-tight mb-6">
           <SiteLogo imageClassName="mx-auto h-12 w-auto" />

@@ -81,7 +81,7 @@ export default function XinePageClient({ slug }: { slug: string }) {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-background text-foreground px-6 py-16">
+      <main className="min-h-[100svh] bg-background text-foreground px-6 py-16">
         <div className="mx-auto flex max-w-6xl flex-col gap-10">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/60">
             Loading xine...
@@ -93,7 +93,7 @@ export default function XinePageClient({ slug }: { slug: string }) {
 
   if (loadError) {
     return (
-      <main className="min-h-screen bg-background text-foreground px-6 py-16">
+      <main className="min-h-[100svh] bg-background text-foreground px-6 py-16">
         <div className="mx-auto flex max-w-6xl flex-col gap-10">
           <div className="rounded-3xl border border-red-400/30 bg-red-500/10 p-10 text-center text-sm text-red-100">
             {loadError}
@@ -105,7 +105,7 @@ export default function XinePageClient({ slug }: { slug: string }) {
 
   if (!xine) {
     return (
-      <main className="min-h-screen bg-background text-foreground px-6 py-16">
+      <main className="min-h-[100svh] bg-background text-foreground px-6 py-16">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 text-center">
           <p className="text-sm text-white/60">This xine could not be found.</p>
           <Link

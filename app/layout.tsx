@@ -32,7 +32,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${jetbrainsMono.className} ${jetbrainsMono.variable} antialiased`}>
         <SiteSettingsProvider settings={settings}>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-[100svh] flex flex-col">
             <div className="fixed left-6 top-6 z-50 flex items-center gap-2">
               <BackButtonClient />
               <a

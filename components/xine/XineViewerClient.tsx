@@ -327,16 +327,18 @@ function XineBook({ xine }: { xine: Xine }) {
       <div
         className={`book-container shadow-xl ${isOpen || isOpening ? 'open' : 'closed'}`}
       >
-        <button
-          type="button"
-          aria-label="Previous page"
-          onClick={handlePrevClick}
-          onPointerDown={(event) => handlePeelStart(event, 'prev')}
-          onPointerMove={handlePeelMove}
-          onPointerUp={handlePeelEnd}
-          onPointerCancel={handlePeelCancel}
-          className="absolute inset-y-0 left-0 z-20 w-1/2 cursor-pointer bg-transparent"
-        />
+        {isOpen && (
+          <button
+            type="button"
+            aria-label="Previous page"
+            onClick={handlePrevClick}
+            onPointerDown={(event) => handlePeelStart(event, 'prev')}
+            onPointerMove={handlePeelMove}
+            onPointerUp={handlePeelEnd}
+            onPointerCancel={handlePeelCancel}
+            className="absolute inset-y-0 left-0 z-20 w-1/2 cursor-pointer bg-transparent"
+          />
+        )}
         <button
           type="button"
           aria-label="Next page"
@@ -345,7 +347,9 @@ function XineBook({ xine }: { xine: Xine }) {
           onPointerMove={handlePeelMove}
           onPointerUp={handlePeelEnd}
           onPointerCancel={handlePeelCancel}
-          className="absolute inset-y-0 right-0 z-20 w-1/2 cursor-pointer bg-transparent"
+          className={`absolute inset-y-0 z-20 cursor-pointer bg-transparent ${
+            isOpen ? 'right-0 w-1/2' : 'inset-x-0 w-full'
+          }`}
         />
         {!isOpen && !isOpening && !isReturning && (
           activeCoverSrc ? (
@@ -634,6 +638,19 @@ function XineBook({ xine }: { xine: Xine }) {
 }
 
 export default function XineViewerClient({ xine }: { xine: Xine }) {
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
+
   return (
     <main className="min-h-[calc(100svh-8rem)] bg-background text-foreground px-6 py-16">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">

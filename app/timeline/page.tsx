@@ -597,10 +597,10 @@ export default function TimelinePage() {
 
   return (
     <main
-      className={`min-h-screen text-white bg-black ${openSans.className}`}
+      className={`min-h-[100svh] text-white bg-black ${openSans.className}`}
     >
-      <div className="min-h-screen flex flex-col">
-        <section className="relative z-10 h-screen px-6 sm:px-10 pb-12 pt-16">
+      <div className="min-h-[100svh] flex flex-col">
+        <section className="relative z-10 h-[100svh] px-6 sm:px-10 pb-12 pt-16">
           <div className="absolute right-6 top-6 z-20 flex flex-col items-end gap-3 text-[11px] uppercase tracking-[0.35em] text-white/60 pointer-events-auto">
             <div className="relative" ref={filterMenuRef}>
               <button
