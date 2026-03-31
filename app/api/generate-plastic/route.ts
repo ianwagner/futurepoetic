@@ -157,8 +157,13 @@ export async function GET(request: Request) {
       ],
     });
 
-    const htmlCode =
+    let htmlCode =
       buildMsg.content[0].type === 'text' ? buildMsg.content[0].text : '';
+    // Strip markdown fences if present
+    htmlCode = htmlCode
+      .replace(/^```html?\s*\n?/i, '')
+      .replace(/\n?```\s*$/i, '')
+      .trim();
 
     // Write to Sanity
     const doc = await sanityClient.create({
