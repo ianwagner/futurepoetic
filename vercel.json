@@ -2,7 +2,7 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/generate-plastic",
+      "path": "/api/generate-plastic/",
       "schedule": "0 6 * * *"
     }
   ]
