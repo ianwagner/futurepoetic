@@ -78,23 +78,15 @@ export default function PlasticDetailPage() {
 
   return (
     <main className="h-[100svh] bg-black text-white flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
-        <div className="flex items-center gap-6">
-          <Link
-            href="/plastic/"
-            className="text-xs uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
-          >
-            &larr; Back
-          </Link>
-          <div>
-            <h1 className="text-base font-medium tracking-wide text-white/90">
-              {entry.title}
-            </h1>
-            <p className="text-[11px] text-white/40 mt-1 max-w-lg leading-relaxed">
-              {entry.subtitle}
-            </p>
-          </div>
+      {/* Header — left side leaves room for global nav (logo + contact) */}
+      <div className="flex items-center justify-between pl-28 pr-8 py-5 border-b border-white/10">
+        <div>
+          <h1 className="text-base font-medium tracking-wide text-white/90">
+            {entry.title}
+          </h1>
+          <p className="text-[11px] text-white/40 mt-1 max-w-lg leading-relaxed">
+            {entry.subtitle}
+          </p>
         </div>
         <div className="flex items-center gap-4">
           {entry.tags && entry.tags.length > 0 && (
