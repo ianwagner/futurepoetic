@@ -41,53 +41,52 @@ Respond with ONLY valid JSON, no markdown fences:
 }`;
 
 const VISUAL_STYLES = [
-  'Brutalist — raw, exposed structure, monospaced type, thick borders, no decoration, concrete-digital aesthetic',
-  'Bioluminescent — deep ocean darks with living, pulsing glows, organic shapes, things that breathe light',
-  'Blueprint — technical drawing aesthetic, white/cyan lines on deep blue, grid paper, precise annotations, engineering diagrams',
-  'Acid graphic — neon overload, clashing colors, glitch effects, distortion, rave poster energy, maximal',
-  'Paper & ink — warm off-white backgrounds, hand-drawn line quality, sketch feel, watercolor washes, analog warmth',
-  'Terminal — green/amber on black, scanline effects, monospace everything, CRT glow, retro computing',
-  'Glassmorphism — frosted translucent panels, layered depth, soft refracted light, delicate and airy',
-  'Topographic — contour lines, elevation data aesthetic, earth tones, cartographic precision, terrain visualization',
-  'Darkroom — deep reds and blacks, photographic negative effects, chemical process aesthetic, light-sensitive',
-  'Celestial — star fields, nebula gradients, cosmic scale, gravitational distortion, astronomical instrument aesthetic',
-  'Woodblock — bold flat areas of color, visible texture, Japanese print influence, limited palette, striking composition',
-  'Industrial — steel grays, warning stripes, gauge clusters, pressure readings, factory control panel aesthetic',
-  'Botanical — intricate line drawings of organic forms, muted greens and earth tones, specimen catalog aesthetic',
-  'Pixel art — chunky low-res pixels, limited 16-color palette, dithering patterns, 8-bit nostalgia',
-  'Noir — high contrast black and white, dramatic shadows, venetian blind light, cinematic tension',
-  'Membrane — translucent layers, cellular structure, things visible through other things, biological transparency',
-  'Stained glass — bold black outlines, jewel-tone color fills, light passing through, cathedral geometry',
-  'Oscilloscope — vector display aesthetic, Lissajous curves, phosphor green traces, waveform visualization',
+  'Minimal and clean — white or near-black background, thin lines, lots of whitespace, understated. Let the interaction be the star.',
+  'Warm and analog — soft creams, muted tones, subtle grain. Feels handmade but the behavior is digital.',
+  'Cold and precise — monospace type, tight grids, cool grays and blues. Clinical but surprising.',
+  'Neon on dark — black background, one or two vivid accent colors. Simple shapes, dramatic contrast.',
+  'Playful and bright — bold primaries, rounded shapes, chunky type. Toylike but smart.',
+  'Monochrome — one color only (plus black/white). All visual interest comes from layout and movement.',
 ];
 
-const BUILD_PROMPT = `You are building experimental, playful, irreverent interactive pieces for a digital art lab.
+const BUILD_PROMPT = `You build interactive web pieces where the BEHAVIOR is the point, not the visuals.
 
-You will receive a concept and a visual style. Build it as a single self-contained HTML file.
+You'll receive a concept and a visual style. Build it as a single self-contained HTML file.
 
-THE SPIRIT:
-This is NOT a dashboard, explainer, or museum exhibit. It's closer to a weird toy, a mischievous system, or an impossible artifact. The user should feel surprise, delight, confusion, or wonder — not "I learned something."
+WHAT MATTERS — in order of importance:
+1. BEHAVIOR. What does it DO? What happens when you interact? What surprises you? 90% of your effort goes here.
+2. Interaction design. How does the user discover what's possible? Can they poke at it and find new things?
+3. Visual style. Keep it simple and clean. The style should support the behavior, not compete with it.
 
-Think about:
-- EMERGENT BEHAVIOR: Simple rules that create complex, unpredictable results. Particles that flock. Text that evolves. Systems that have their own agenda. Things that feel alive and autonomous, not controlled.
-- SUBVERTED INTERACTIONS: A button that runs away from your cursor. A text field that argues back. A scroll bar that scrolls the wrong thing. A form that fills itself in and submits before you can stop it. Things that break the contract between user and interface.
-- CONTENT THAT MISBEHAVES: Text that rearranges itself as you read it. Paragraphs you have to chase. Words that decay or mutate over time. Copy that's revealed only by specific gestures then vanishes. An article layout that literally falls apart.
-- SYSTEMS, NOT CONTROLS: Instead of sliders that adjust values, create ecosystems where things influence each other. A field of elements with physics. Agents with simple behaviors that create surprising patterns. Cellular automata. Flocking. Erosion. Growth.
-- IMPOSSIBLE INTERFACES: UI that couldn't exist in a real product. A loading bar that goes backwards when you watch it. A toggle that toggles something about itself. Nested interfaces inside interfaces. A settings panel that changes the settings panel.
+THE BEHAVIOR SHOULD BE THE SHOW:
+- Elements that have their own physics, desires, or rules
+- Things that respond to the cursor, clicks, or keyboard in unexpected ways
+- Systems where small inputs create disproportionate or chain-reaction outputs
+- Emergent patterns from simple rules (boids, cellular automata, reaction-diffusion, gravity)
+- UI elements that subvert expectations (buttons that flee, text that rearranges, forms that have opinions)
+- Content that must be uncovered, chased, earned, or that disappears
+- Things that evolve, grow, decay, or change state over time without user input
 
-Every piece should make someone go "what the hell?" and then spend 5 minutes playing with it.
+KEEP THE VISUALS SIMPLE:
+- Clean layouts. No heavy texturing, no ornate borders, no decorative illustrations.
+- Use the given style direction for color palette and typography, but don't overdesign.
+- A plain div with fascinating behavior > a beautiful graphic that sits there.
+- If you're spending more code on CSS than JavaScript, you're doing it wrong.
 
-AVOID: Dashboards with knobs/sliders. Static illustrations. Posters. Educational explainers. Typical data visualizations. Things that feel like a museum touchscreen.
+AVOID:
+- Dashboards, control panels, sliders, knobs
+- Static graphics, posters, illustrations with no real interaction
+- Heavy visual themes that become the entire piece (woodblock prints, stained glass, etc.)
+- Educational explainers or infographics
+- Decorative animations with no user agency
 
-Technical rules:
-- Output ONLY the complete HTML document. No markdown fences, no explanation.
-- Self-contained — inline all CSS and JavaScript. No external dependencies.
-- COMMIT FULLY to the given visual style direction.
-- Must work on both desktop and mobile. Use relative units and flexible layouts.
-- Allow scrolling if needed. Do NOT use overflow: hidden on the body.
-- Use modern CSS and vanilla JavaScript.
-- Push browser capabilities — canvas, SVG, Web Audio, CSS transforms, blend modes, requestAnimationFrame.
-- Keep under 15KB total.`;
+Technical:
+- Output ONLY the complete HTML. No markdown fences, no explanation.
+- Self-contained — inline CSS and JS. No external dependencies.
+- Responsive — works on desktop and mobile.
+- Allow scrolling if needed.
+- Vanilla JS. Use canvas, SVG, requestAnimationFrame where appropriate.
+- Under 15KB.`;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
