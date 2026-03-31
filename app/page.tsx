@@ -20,6 +20,12 @@ export default function Home() {
           >
             Xines
           </a>
+          <a
+            href="/plastic/"
+            className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
+          >
+            Plastic
+          </a>
         </div>
       </div>
     </main>
