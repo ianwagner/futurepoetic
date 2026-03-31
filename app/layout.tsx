@@ -38,7 +38,7 @@ export default async function RootLayout({
               <a
                 href="https://ianwagner.co/contact"
                 aria-label="Contact Ian Wagner"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition-colors hover:border-[#F78326] hover:text-[#F78326]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 backdrop-blur text-white/80 transition-colors hover:border-[#F78326] hover:text-[#F78326] hover:bg-black/60"
               >
                 <svg
                   className="h-[18px] w-[18px]"

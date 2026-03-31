@@ -77,26 +77,28 @@ export default function PlasticDetailPage() {
   );
 
   return (
-    <main className="min-h-[100svh] bg-black text-white flex flex-col">
-      {/* Header — inline with global nav */}
-      <div className="flex items-center gap-6 pl-28 pr-6 py-3 border-b border-white/10">
-        <h1 className="text-sm font-medium tracking-wide text-white/90 shrink-0">
-          {entry.title}
-        </h1>
-        <p className="text-[11px] text-white/40 leading-relaxed truncate hidden sm:block">
+    <main className="min-h-[100svh] bg-black text-white flex flex-col pb-14">
+      {/* Header — below fixed global nav */}
+      <div className="mt-14 px-6 py-3 border-b border-white/10">
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="text-sm font-medium tracking-wide text-white/90">
+            {entry.title}
+          </h1>
+          <div className="flex items-center gap-3 shrink-0">
+            <span
+              className="text-[10px] font-medium uppercase tracking-[0.2em]"
+              style={{ color: entry.accentColor || '#fff' }}
+            >
+              {String(entry.dayNumber).padStart(3, '0')}
+            </span>
+            <span className="text-[10px] uppercase tracking-wider text-white/30">
+              {formattedDate}
+            </span>
+          </div>
+        </div>
+        <p className="text-[11px] text-white/40 mt-1 leading-relaxed">
           {entry.subtitle}
         </p>
-        <div className="ml-auto flex items-center gap-3 shrink-0">
-          <span
-            className="text-[10px] font-medium uppercase tracking-[0.2em]"
-            style={{ color: entry.accentColor || '#fff' }}
-          >
-            {String(entry.dayNumber).padStart(3, '0')}
-          </span>
-          <span className="text-[10px] uppercase tracking-wider text-white/30">
-            {formattedDate}
-          </span>
-        </div>
       </div>
 
       {/* Rendered UI */}
@@ -106,7 +108,7 @@ export default function PlasticDetailPage() {
             srcDoc={entry.htmlCode}
             sandbox="allow-scripts"
             className="w-full border-0"
-            style={{ height: 'calc(100svh - 100px)', minHeight: '500px' }}
+            style={{ height: 'calc(100svh - 160px)', minHeight: '500px' }}
             title={entry.title}
           />
         ) : (
