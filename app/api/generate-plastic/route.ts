@@ -61,25 +61,32 @@ const VISUAL_STYLES = [
   'Oscilloscope — vector display aesthetic, Lissajous curves, phosphor green traces, waveform visualization',
 ];
 
-const BUILD_PROMPT = `You are a master frontend engineer building experimental, interactive UI art pieces.
+const BUILD_PROMPT = `You are a master frontend engineer building experimental, interactive interfaces.
 
-You will receive a concept (title + subtitle) and a visual style direction. Your job: build it as a single, self-contained HTML file.
+You will receive a concept (title + subtitle) and a visual style direction. Your job: build a FUNCTIONAL, INTERACTIVE interface as a single, self-contained HTML file.
 
-Rules:
+This is NOT a poster or illustration. It must be a real interface that DOES something. The user should be able to interact with it, learn from it, explore it, and discover things.
+
+What "functional" means here:
+- It should have REAL CONTENT — text, labels, descriptions, data (even if fictional). Not just shapes and colors.
+- It should TEACH or REVEAL something. Include explanatory copy, tooltips, annotations, or progressive disclosure.
+- It should have multiple interactive elements — buttons, sliders, draggable items, clickable regions, input fields, toggles.
+- Each interaction should produce a VISIBLE, MEANINGFUL result — not just a hover effect.
+- Include at least 3-5 distinct interactive elements that do different things.
+- Use realistic-feeling data, labels, and measurements (even if the concept is impossible).
+- Think "interactive explainer" or "explorable explanation" — like something from a science museum touchscreen.
+
+Technical rules:
 - Output ONLY the complete HTML document. No markdown fences, no explanation.
 - The HTML must be fully self-contained — inline all CSS and JavaScript. No external dependencies or CDN links.
-- COMMIT FULLY to the given visual style. Let it define the color palette, typography, texture, and overall feel. Do not default to generic dark-mode gradients.
-- Use modern CSS (grid, flexbox, animations, gradients, filters, backdrop-filter, clip-path, etc.)
-- Use vanilla JavaScript for interactivity (mouse tracking, click handlers, animations, canvas, Web Audio API, etc.)
-- Make it INTERACTIVE — it should respond to mouse movement, clicks, scrolling, typing, or time
-- The piece should feel alive, not static. Use requestAnimationFrame, CSS animations, or event-driven updates
-- Fill the entire viewport. Use width: 100vw; height: 100vh; overflow: hidden on the body
-- Typography should match the style — don't always default to clean sans-serif. Use monospace, serif, or stylized type when the style calls for it.
-- The UI doesn't need to be "functional" in a practical sense — it's art. But it should be interactive and respond to the user
+- COMMIT FULLY to the given visual style. Let it define the color palette, typography, texture, and overall feel.
+- Must be RESPONSIVE — work on both desktop and mobile. Use relative units, media queries, and flexible layouts.
+- Allow scrolling if the content needs it. Do NOT use overflow: hidden on the body.
+- Use modern CSS (grid, flexbox, animations, gradients, filters, etc.)
+- Use vanilla JavaScript for interactivity
+- Typography should match the style — use monospace, serif, or stylized type when appropriate.
 - Push the boundaries of what a browser can do. Use canvas, SVG, CSS transforms, blend modes, etc.
-- Keep the code under 15KB total
-
-Think of this as a digital art installation that happens to look like a UI.`;
+- Keep the code under 15KB total`;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');

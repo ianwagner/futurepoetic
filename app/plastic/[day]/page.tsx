@@ -77,49 +77,52 @@ export default function PlasticDetailPage() {
   );
 
   return (
-    <main className="h-[100svh] bg-black text-white flex flex-col overflow-hidden">
-      {/* Header — left side leaves room for global nav (logo + contact) */}
-      <div className="flex items-center justify-between pl-28 pr-8 py-5 border-b border-white/10">
-        <div>
-          <h1 className="text-base font-medium tracking-wide text-white/90">
-            {entry.title}
-          </h1>
-          <p className="text-[11px] text-white/40 mt-1 max-w-lg leading-relaxed">
-            {entry.subtitle}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          {entry.tags && entry.tags.length > 0 && (
-            <div className="hidden sm:flex flex-wrap gap-1.5">
-              {entry.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/10 px-2 py-0.5 text-[9px] uppercase tracking-wider text-white/30"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          <span
-            className="text-[10px] font-medium uppercase tracking-[0.2em]"
-            style={{ color: entry.accentColor || '#fff' }}
-          >
-            Day {String(entry.dayNumber).padStart(3, '0')}
-          </span>
-          <span className="text-[10px] uppercase tracking-wider text-white/30">
-            {formattedDate}
-          </span>
+    <main className="min-h-[100svh] bg-black text-white flex flex-col">
+      {/* Header — sits below the fixed global nav */}
+      <div className="pt-16 px-6 pb-4 border-b border-white/10">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-base font-medium tracking-wide text-white/90">
+              {entry.title}
+            </h1>
+            <p className="text-[11px] text-white/40 mt-1 max-w-lg leading-relaxed">
+              {entry.subtitle}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {entry.tags && entry.tags.length > 0 && (
+              <div className="hidden sm:flex flex-wrap gap-1.5">
+                {entry.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-white/10 px-2 py-0.5 text-[9px] uppercase tracking-wider text-white/30"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            <span
+              className="text-[10px] font-medium uppercase tracking-[0.2em]"
+              style={{ color: entry.accentColor || '#fff' }}
+            >
+              Day {String(entry.dayNumber).padStart(3, '0')}
+            </span>
+            <span className="text-[10px] uppercase tracking-wider text-white/30">
+              {formattedDate}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Rendered UI */}
-      <div className="flex-1 relative">
+      <div className="flex-1">
         {entry.htmlCode ? (
           <iframe
             srcDoc={entry.htmlCode}
             sandbox="allow-scripts"
-            className="absolute inset-0 w-full h-full border-0"
+            className="w-full border-0"
+            style={{ height: 'calc(100svh - 100px)', minHeight: '500px' }}
             title={entry.title}
           />
         ) : (
