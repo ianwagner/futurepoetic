@@ -1,6 +1,4 @@
 {
-  "trailingSlash": true,
-  "buildCommand": "npm run build",
   "crons": [
     {
       "path": "/api/generate-plastic",
