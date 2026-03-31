@@ -73,15 +73,22 @@ export async function GET(request: Request) {
 
     const today = new Date().toISOString().split('T')[0];
 
-    const existing = await sanityClient.fetch<{ _id: string } | null>(
-      `*[_type == "plastic" && date == $date][0] { _id }`,
+    const existing = await sanityClient.fetch<{
+      _id: string;
+      htmlCode?: string;
+    } | null>(
+      `*[_type == "plastic" && date == $date][0] { _id, htmlCode }`,
       { date: today }
     );
-    if (existing) {
+    if (existing && existing.htmlCode) {
       return NextResponse.json({
         message: 'Already generated for today',
         date: today,
       });
+    }
+    // Delete incomplete entry if it exists
+    if (existing) {
+      await sanityClient.delete(existing._id);
     }
 
     // Step 1: Generate the concept
