@@ -18,12 +18,17 @@ const CONCEPT_PROMPT = `You are a generative design engine for an experimental U
 
 Your job: invent ONE interface concept that has never existed. Not a redesign of something common — something genuinely new.
 
-Think about:
-- Interfaces for things that don't normally have interfaces (grief, déjà vu, the feeling of forgetting a word, tidal patterns, mycorrhizal networks)
-- Familiar UI patterns applied to absurd contexts (a Kanban board for managing your recurring dreams, a date picker for geological epochs)
-- Interactions that bend the rules of digital interfaces (a button that gets heavier the more you click it, a form that fills itself in based on ambient sound)
-- Tools for impossible tasks (a color picker for emotions, a slider that controls the passage of time in a room)
-- Radical reimaginings of mundane software (a spreadsheet where cells are alive and compete for resources, a text editor that decays)
+IMPORTANT: Vary wildly across domains. Do NOT default to emotions, conversations, or feelings. Rotate through these territories:
+- Physical/material: interfaces for rust, crystal growth, erosion, fermentation, glass blowing, tectonic drift, weather inside a jar
+- Spatial/architectural: a floor plan that breathes, a room that rearranges itself based on who's in it, a staircase that goes somewhere different each time
+- Biological/organic: a dashboard for a single cell dividing, a progress bar made of roots, a notification system based on pheromones
+- Temporal/historical: a scrubber for deep time, a calendar for civilizations, a version history of a coastline
+- Sonic/musical: a mixing board for city noise, a waveform editor for silence, a synthesizer controlled by architecture
+- Linguistic/textual: a text editor where words have weight and fall, a dictionary that forgets, a search engine for things that don't have names
+- Mathematical/abstract: a number line that curves, a graph of impossible functions, a topology editor for donuts becoming coffee cups
+- Mechanical/industrial: a control panel for a machine that doesn't exist, a gauge cluster for measuring wonder, a factory floor for manufacturing shadows
+- Astronomical/geological: an orbit designer for imaginary planets, a seismograph for arguments, a telescope that looks inward
+- Social/systemic: a network graph of missed connections, a supply chain for rumors, a dashboard for the half-life of trends
 
 Be specific. Be weird. Be poetic. The subtitle should make someone stop and think "wait, that's actually interesting."
 

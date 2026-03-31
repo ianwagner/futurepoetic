@@ -23,7 +23,6 @@ export default function PlasticDetailPage() {
   const [entry, setEntry] = useState<PlasticEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -79,7 +78,50 @@ export default function PlasticDetailPage() {
 
   return (
     <main className="h-[100svh] bg-black text-white flex flex-col overflow-hidden">
-      {/* Full-screen UI */}
+      {/* Header */}
+      <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
+        <div className="flex items-center gap-6">
+          <Link
+            href="/plastic/"
+            className="text-xs uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
+          >
+            &larr; Back
+          </Link>
+          <div>
+            <h1 className="text-base font-medium tracking-wide text-white/90">
+              {entry.title}
+            </h1>
+            <p className="text-[11px] text-white/40 mt-1 max-w-lg leading-relaxed">
+              {entry.subtitle}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {entry.tags && entry.tags.length > 0 && (
+            <div className="hidden sm:flex flex-wrap gap-1.5">
+              {entry.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-white/10 px-2 py-0.5 text-[9px] uppercase tracking-wider text-white/30"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          <span
+            className="text-[10px] font-medium uppercase tracking-[0.2em]"
+            style={{ color: entry.accentColor || '#fff' }}
+          >
+            Day {String(entry.dayNumber).padStart(3, '0')}
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-white/30">
+            {formattedDate}
+          </span>
+        </div>
+      </div>
+
+      {/* Rendered UI */}
       <div className="flex-1 relative">
         {entry.htmlCode ? (
           <iframe
@@ -96,61 +138,6 @@ export default function PlasticDetailPage() {
           </div>
         )}
       </div>
-
-      {/* Floating controls — bottom left */}
-      <div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
-        <Link
-          href="/plastic/"
-          className="rounded-full bg-black/70 backdrop-blur-sm border border-white/10 px-3 py-1.5 text-[10px] uppercase tracking-wider text-white/50 hover:text-white/90 hover:border-white/30 transition-all"
-        >
-          &larr;
-        </Link>
-        <button
-          onClick={() => setShowInfo(!showInfo)}
-          className="rounded-full bg-black/70 backdrop-blur-sm border border-white/10 px-3 py-1.5 text-[10px] uppercase tracking-wider text-white/50 hover:text-white/90 hover:border-white/30 transition-all"
-        >
-          {showInfo ? 'Hide' : 'Info'}
-        </button>
-      </div>
-
-      {/* Floating day badge — bottom right */}
-      <div className="absolute bottom-4 right-4 z-10">
-        <span
-          className="rounded-full bg-black/70 backdrop-blur-sm border border-white/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em]"
-          style={{ color: entry.accentColor || '#fff' }}
-        >
-          {String(entry.dayNumber).padStart(3, '0')}
-        </span>
-      </div>
-
-      {/* Info panel — slides up from bottom */}
-      {showInfo && (
-        <div className="absolute bottom-14 left-4 z-10 max-w-sm rounded-xl bg-black/80 backdrop-blur-md border border-white/10 p-4">
-          <h1 className="text-sm font-medium tracking-wide text-white/90">
-            {entry.title}
-          </h1>
-          <p className="text-[11px] text-white/40 mt-1 leading-relaxed">
-            {entry.subtitle}
-          </p>
-          <div className="mt-2 flex items-center gap-3">
-            <span className="text-[9px] uppercase tracking-wider text-white/25">
-              {formattedDate}
-            </span>
-            {entry.tags && entry.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {entry.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-white/10 px-1.5 py-0.5 text-[8px] uppercase tracking-wider text-white/25"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </main>
   );
 }
