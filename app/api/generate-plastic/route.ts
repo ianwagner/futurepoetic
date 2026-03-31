@@ -40,21 +40,41 @@ Respond with ONLY valid JSON, no markdown fences:
   "accentColor": "hex color that fits the mood"
 }`;
 
+const VISUAL_STYLES = [
+  'Brutalist — raw, exposed structure, monospaced type, thick borders, no decoration, concrete-digital aesthetic',
+  'Bioluminescent — deep ocean darks with living, pulsing glows, organic shapes, things that breathe light',
+  'Blueprint — technical drawing aesthetic, white/cyan lines on deep blue, grid paper, precise annotations, engineering diagrams',
+  'Acid graphic — neon overload, clashing colors, glitch effects, distortion, rave poster energy, maximal',
+  'Paper & ink — warm off-white backgrounds, hand-drawn line quality, sketch feel, watercolor washes, analog warmth',
+  'Terminal — green/amber on black, scanline effects, monospace everything, CRT glow, retro computing',
+  'Glassmorphism — frosted translucent panels, layered depth, soft refracted light, delicate and airy',
+  'Topographic — contour lines, elevation data aesthetic, earth tones, cartographic precision, terrain visualization',
+  'Darkroom — deep reds and blacks, photographic negative effects, chemical process aesthetic, light-sensitive',
+  'Celestial — star fields, nebula gradients, cosmic scale, gravitational distortion, astronomical instrument aesthetic',
+  'Woodblock — bold flat areas of color, visible texture, Japanese print influence, limited palette, striking composition',
+  'Industrial — steel grays, warning stripes, gauge clusters, pressure readings, factory control panel aesthetic',
+  'Botanical — intricate line drawings of organic forms, muted greens and earth tones, specimen catalog aesthetic',
+  'Pixel art — chunky low-res pixels, limited 16-color palette, dithering patterns, 8-bit nostalgia',
+  'Noir — high contrast black and white, dramatic shadows, venetian blind light, cinematic tension',
+  'Membrane — translucent layers, cellular structure, things visible through other things, biological transparency',
+  'Stained glass — bold black outlines, jewel-tone color fills, light passing through, cathedral geometry',
+  'Oscilloscope — vector display aesthetic, Lissajous curves, phosphor green traces, waveform visualization',
+];
+
 const BUILD_PROMPT = `You are a master frontend engineer building experimental, interactive UI art pieces.
 
-You will receive a concept (title + subtitle) for an impossible interface. Your job: build it as a single, self-contained HTML file.
+You will receive a concept (title + subtitle) and a visual style direction. Your job: build it as a single, self-contained HTML file.
 
 Rules:
 - Output ONLY the complete HTML document. No markdown fences, no explanation.
 - The HTML must be fully self-contained — inline all CSS and JavaScript. No external dependencies or CDN links.
+- COMMIT FULLY to the given visual style. Let it define the color palette, typography, texture, and overall feel. Do not default to generic dark-mode gradients.
 - Use modern CSS (grid, flexbox, animations, gradients, filters, backdrop-filter, clip-path, etc.)
 - Use vanilla JavaScript for interactivity (mouse tracking, click handlers, animations, canvas, Web Audio API, etc.)
-- The UI should be visually stunning on a dark background (#000000)
 - Make it INTERACTIVE — it should respond to mouse movement, clicks, scrolling, typing, or time
 - The piece should feel alive, not static. Use requestAnimationFrame, CSS animations, or event-driven updates
 - Fill the entire viewport. Use width: 100vw; height: 100vh; overflow: hidden on the body
-- Use a sophisticated color palette that matches the concept's mood
-- Typography should be clean and modern — use system fonts (system-ui, -apple-system, sans-serif)
+- Typography should match the style — don't always default to clean sans-serif. Use monospace, serif, or stylized type when the style calls for it.
 - The UI doesn't need to be "functional" in a practical sense — it's art. But it should be interactive and respond to the user
 - Push the boundaries of what a browser can do. Use canvas, SVG, CSS transforms, blend modes, etc.
 - Keep the code under 15KB total
@@ -114,7 +134,9 @@ export async function GET(request: Request) {
       conceptMsg.content[0].type === 'text' ? conceptMsg.content[0].text : '';
     const concept = JSON.parse(conceptText);
 
-    // Step 2: Generate the actual UI
+    // Step 2: Generate the actual UI with a random visual style
+    const style =
+      VISUAL_STYLES[Math.floor(Math.random() * VISUAL_STYLES.length)];
     const buildMsg = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 16000,
@@ -122,7 +144,7 @@ export async function GET(request: Request) {
       messages: [
         {
           role: 'user',
-          content: `Build this concept:\n\nTitle: ${concept.title}\nDescription: ${concept.subtitle}\nAccent color: ${concept.accentColor}\n\nMake it interactive, visually rich, and completely self-contained.`,
+          content: `Build this concept:\n\nTitle: ${concept.title}\nDescription: ${concept.subtitle}\nAccent color: ${concept.accentColor}\n\nVisual style: ${style}\n\nCommit fully to this visual style. Make it interactive, visually rich, and completely self-contained.`,
         },
       ],
     });

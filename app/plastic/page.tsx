@@ -64,7 +64,7 @@ export default function PlasticPage() {
           </h1>
           <p className="mt-2 text-xs leading-relaxed text-white/40 max-w-md">
             A daily experiment in impossible interfaces. Every day, a new UI
-            concept that has never existed — and probably shouldn&apos;t.
+            concept that has never existed.
           </p>
         </div>
 
