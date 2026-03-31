@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { client } from '@/sanity/lib/client';
 
@@ -79,12 +80,12 @@ export default function PlasticDetailPage() {
     <main className="min-h-[100svh] bg-black text-white flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-        <a
+        <Link
           href="/plastic/"
           className="text-xs uppercase tracking-wider text-white/40 hover:text-white/70 transition-colors"
         >
           &larr; Back
-        </a>
+        </Link>
         <div className="text-right">
           <span
             className="text-[10px] font-medium uppercase tracking-[0.2em]"

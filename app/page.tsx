@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import SiteLogo from '@/components/SiteLogo';
 
 export default function Home() {
@@ -8,24 +9,24 @@ export default function Home() {
           <SiteLogo imageClassName="mx-auto h-12 w-auto" />
         </h1>
         <div className="flex flex-col items-center gap-3">
-          <a
+          <Link
             href="/timeline/"
             className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
           >
             Timeline
-          </a>
-          <a
+          </Link>
+          <Link
             href="/xine-library/"
             className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
           >
             Xines
-          </a>
-          <a
+          </Link>
+          <Link
             href="/plastic/"
             className="px-5 py-3 rounded-md bg-white text-black text-sm uppercase tracking-wide"
           >
             Plastic
-          </a>
+          </Link>
         </div>
       </div>
     </main>

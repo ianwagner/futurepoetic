@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 type PlasticCardProps = {
@@ -31,7 +32,7 @@ export default function PlasticCard({
   );
 
   return (
-    <a href={`/plastic/${dayNumber}/`}>
+    <Link href={`/plastic/${dayNumber}/`}>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -70,6 +71,6 @@ export default function PlasticCard({
         </div>
       )}
     </motion.div>
-    </a>
+    </Link>
   );
 }
