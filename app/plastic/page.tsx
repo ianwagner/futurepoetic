@@ -21,7 +21,8 @@ const plasticQuery = `*[_type == "plastic"] | order(dayNumber desc) {
   date,
   dayNumber,
   tags,
-  accentColor
+  accentColor,
+  "hasUI": defined(htmlCode)
 }`;
 
 export default function PlasticPage() {

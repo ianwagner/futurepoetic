@@ -31,11 +31,12 @@ export default function PlasticCard({
   );
 
   return (
+    <a href={`/plastic/${dayNumber}/`}>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="group relative rounded-2xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.07]"
+      className="group relative rounded-2xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.07] cursor-pointer"
       style={{ borderLeftColor: accentColor, borderLeftWidth: 2 }}
     >
       <div className="mb-3 flex items-center justify-between">
@@ -69,5 +70,6 @@ export default function PlasticCard({
         </div>
       )}
     </motion.div>
+    </a>
   );
 }

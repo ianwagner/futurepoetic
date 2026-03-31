@@ -14,7 +14,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const SYSTEM_PROMPT = `You are a generative design engine for an experimental UI laboratory called "Plastic."
+const CONCEPT_PROMPT = `You are a generative design engine for an experimental UI laboratory called "Plastic."
 
 Your job: invent ONE interface concept that has never existed. Not a redesign of something common — something genuinely new.
 
@@ -35,8 +35,28 @@ Respond with ONLY valid JSON, no markdown fences:
   "accentColor": "hex color that fits the mood"
 }`;
 
+const BUILD_PROMPT = `You are a master frontend engineer building experimental, interactive UI art pieces.
+
+You will receive a concept (title + subtitle) for an impossible interface. Your job: build it as a single, self-contained HTML file.
+
+Rules:
+- Output ONLY the complete HTML document. No markdown fences, no explanation.
+- The HTML must be fully self-contained — inline all CSS and JavaScript. No external dependencies or CDN links.
+- Use modern CSS (grid, flexbox, animations, gradients, filters, backdrop-filter, clip-path, etc.)
+- Use vanilla JavaScript for interactivity (mouse tracking, click handlers, animations, canvas, Web Audio API, etc.)
+- The UI should be visually stunning on a dark background (#000000)
+- Make it INTERACTIVE — it should respond to mouse movement, clicks, scrolling, typing, or time
+- The piece should feel alive, not static. Use requestAnimationFrame, CSS animations, or event-driven updates
+- Fill the entire viewport. Use width: 100vw; height: 100vh; overflow: hidden on the body
+- Use a sophisticated color palette that matches the concept's mood
+- Typography should be clean and modern — use system fonts (system-ui, -apple-system, sans-serif)
+- The UI doesn't need to be "functional" in a practical sense — it's art. But it should be interactive and respond to the user
+- Push the boundaries of what a browser can do. Use canvas, SVG, CSS transforms, blend modes, etc.
+- Keep the code under 15KB total
+
+Think of this as a digital art installation that happens to look like a UI.`;
+
 export async function GET(request: Request) {
-  // Verify cron secret in production
   const authHeader = request.headers.get('authorization');
   if (
     process.env.CRON_SECRET &&
@@ -46,16 +66,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Get the current max day number
     const lastEntry = await sanityClient.fetch<{ dayNumber: number } | null>(
       `*[_type == "plastic"] | order(dayNumber desc) [0] { dayNumber }`
     );
     const nextDay = (lastEntry?.dayNumber ?? -1) + 1;
 
-    // Generate today's date string
     const today = new Date().toISOString().split('T')[0];
 
-    // Check if we already generated for today
     const existing = await sanityClient.fetch<{ _id: string } | null>(
       `*[_type == "plastic" && date == $date][0] { _id }`,
       { date: today }
@@ -67,11 +84,11 @@ export async function GET(request: Request) {
       });
     }
 
-    // Call Claude API
-    const message = await anthropic.messages.create({
+    // Step 1: Generate the concept
+    const conceptMsg = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
-      system: SYSTEM_PROMPT,
+      system: CONCEPT_PROMPT,
       messages: [
         {
           role: 'user',
@@ -81,9 +98,25 @@ export async function GET(request: Request) {
       ],
     });
 
-    const text =
-      message.content[0].type === 'text' ? message.content[0].text : '';
-    const concept = JSON.parse(text);
+    const conceptText =
+      conceptMsg.content[0].type === 'text' ? conceptMsg.content[0].text : '';
+    const concept = JSON.parse(conceptText);
+
+    // Step 2: Generate the actual UI
+    const buildMsg = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 16000,
+      system: BUILD_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: `Build this concept:\n\nTitle: ${concept.title}\nDescription: ${concept.subtitle}\nAccent color: ${concept.accentColor}\n\nMake it interactive, visually rich, and completely self-contained.`,
+        },
+      ],
+    });
+
+    const htmlCode =
+      buildMsg.content[0].type === 'text' ? buildMsg.content[0].text : '';
 
     // Write to Sanity
     const doc = await sanityClient.create({
@@ -94,6 +127,7 @@ export async function GET(request: Request) {
       dayNumber: nextDay,
       tags: concept.tags || [],
       accentColor: concept.accentColor || '#ffffff',
+      htmlCode,
     });
 
     return NextResponse.json({
