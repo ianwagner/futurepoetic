@@ -78,40 +78,24 @@ export default function PlasticDetailPage() {
 
   return (
     <main className="min-h-[100svh] bg-black text-white flex flex-col">
-      {/* Header — sits below the fixed global nav */}
-      <div className="pt-16 px-6 pb-4 border-b border-white/10">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h1 className="text-base font-medium tracking-wide text-white/90">
-              {entry.title}
-            </h1>
-            <p className="text-[11px] text-white/40 mt-1 max-w-lg leading-relaxed">
-              {entry.subtitle}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            {entry.tags && entry.tags.length > 0 && (
-              <div className="hidden sm:flex flex-wrap gap-1.5">
-                {entry.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-white/10 px-2 py-0.5 text-[9px] uppercase tracking-wider text-white/30"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-            <span
-              className="text-[10px] font-medium uppercase tracking-[0.2em]"
-              style={{ color: entry.accentColor || '#fff' }}
-            >
-              Day {String(entry.dayNumber).padStart(3, '0')}
-            </span>
-            <span className="text-[10px] uppercase tracking-wider text-white/30">
-              {formattedDate}
-            </span>
-          </div>
+      {/* Header — inline with global nav */}
+      <div className="flex items-center gap-6 pl-28 pr-6 py-3 border-b border-white/10">
+        <h1 className="text-sm font-medium tracking-wide text-white/90 shrink-0">
+          {entry.title}
+        </h1>
+        <p className="text-[11px] text-white/40 leading-relaxed truncate hidden sm:block">
+          {entry.subtitle}
+        </p>
+        <div className="ml-auto flex items-center gap-3 shrink-0">
+          <span
+            className="text-[10px] font-medium uppercase tracking-[0.2em]"
+            style={{ color: entry.accentColor || '#fff' }}
+          >
+            {String(entry.dayNumber).padStart(3, '0')}
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-white/30">
+            {formattedDate}
+          </span>
         </div>
       </div>
 
