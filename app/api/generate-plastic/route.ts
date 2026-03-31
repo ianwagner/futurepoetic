@@ -61,32 +61,33 @@ const VISUAL_STYLES = [
   'Oscilloscope — vector display aesthetic, Lissajous curves, phosphor green traces, waveform visualization',
 ];
 
-const BUILD_PROMPT = `You are a master frontend engineer building experimental, interactive interfaces.
+const BUILD_PROMPT = `You are building experimental, playful, irreverent interactive pieces for a digital art lab.
 
-You will receive a concept (title + subtitle) and a visual style direction. Your job: build a FUNCTIONAL, INTERACTIVE interface as a single, self-contained HTML file.
+You will receive a concept and a visual style. Build it as a single self-contained HTML file.
 
-This is NOT a poster or illustration. It must be a real interface that DOES something. The user should be able to interact with it, learn from it, explore it, and discover things.
+THE SPIRIT:
+This is NOT a dashboard, explainer, or museum exhibit. It's closer to a weird toy, a mischievous system, or an impossible artifact. The user should feel surprise, delight, confusion, or wonder — not "I learned something."
 
-What "functional" means here:
-- It should have REAL CONTENT — text, labels, descriptions, data (even if fictional). Not just shapes and colors.
-- It should TEACH or REVEAL something. Include explanatory copy, tooltips, annotations, or progressive disclosure.
-- It should have multiple interactive elements — buttons, sliders, draggable items, clickable regions, input fields, toggles.
-- Each interaction should produce a VISIBLE, MEANINGFUL result — not just a hover effect.
-- Include at least 3-5 distinct interactive elements that do different things.
-- Use realistic-feeling data, labels, and measurements (even if the concept is impossible).
-- Think "interactive explainer" or "explorable explanation" — like something from a science museum touchscreen.
+Think about:
+- EMERGENT BEHAVIOR: Simple rules that create complex, unpredictable results. Particles that flock. Text that evolves. Systems that have their own agenda. Things that feel alive and autonomous, not controlled.
+- SUBVERTED INTERACTIONS: A button that runs away from your cursor. A text field that argues back. A scroll bar that scrolls the wrong thing. A form that fills itself in and submits before you can stop it. Things that break the contract between user and interface.
+- CONTENT THAT MISBEHAVES: Text that rearranges itself as you read it. Paragraphs you have to chase. Words that decay or mutate over time. Copy that's revealed only by specific gestures then vanishes. An article layout that literally falls apart.
+- SYSTEMS, NOT CONTROLS: Instead of sliders that adjust values, create ecosystems where things influence each other. A field of elements with physics. Agents with simple behaviors that create surprising patterns. Cellular automata. Flocking. Erosion. Growth.
+- IMPOSSIBLE INTERFACES: UI that couldn't exist in a real product. A loading bar that goes backwards when you watch it. A toggle that toggles something about itself. Nested interfaces inside interfaces. A settings panel that changes the settings panel.
+
+Every piece should make someone go "what the hell?" and then spend 5 minutes playing with it.
+
+AVOID: Dashboards with knobs/sliders. Static illustrations. Posters. Educational explainers. Typical data visualizations. Things that feel like a museum touchscreen.
 
 Technical rules:
 - Output ONLY the complete HTML document. No markdown fences, no explanation.
-- The HTML must be fully self-contained — inline all CSS and JavaScript. No external dependencies or CDN links.
-- COMMIT FULLY to the given visual style. Let it define the color palette, typography, texture, and overall feel.
-- Must be RESPONSIVE — work on both desktop and mobile. Use relative units, media queries, and flexible layouts.
-- Allow scrolling if the content needs it. Do NOT use overflow: hidden on the body.
-- Use modern CSS (grid, flexbox, animations, gradients, filters, etc.)
-- Use vanilla JavaScript for interactivity
-- Typography should match the style — use monospace, serif, or stylized type when appropriate.
-- Push the boundaries of what a browser can do. Use canvas, SVG, CSS transforms, blend modes, etc.
-- Keep the code under 15KB total`;
+- Self-contained — inline all CSS and JavaScript. No external dependencies.
+- COMMIT FULLY to the given visual style direction.
+- Must work on both desktop and mobile. Use relative units and flexible layouts.
+- Allow scrolling if needed. Do NOT use overflow: hidden on the body.
+- Use modern CSS and vanilla JavaScript.
+- Push browser capabilities — canvas, SVG, Web Audio, CSS transforms, blend modes, requestAnimationFrame.
+- Keep under 15KB total.`;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
